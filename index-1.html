@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="aurora">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BufetCost · F&B P&L Analytics</title>
+<meta name="application-name" content="BufetCost">
+<meta name="description" content="Analiza kosztów i przychodów bufetu hotelowego (śniadania, kolacje)">
+<meta name="theme-color" content="#0d0b1f" id="meta-theme">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BufetCost">
+<link rel="icon" id="pwa-favicon">
+<link rel="apple-touch-icon" id="pwa-apple-icon">
+<link rel="manifest" id="pwa-manifest">
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — "Aurora" theme
+   bg: deep indigo-violet · signature: gradient rings (violet→coral→pink)
+═══════════════════════════════════════════════════════ */
+:root{
+  --bg:#0d0b1f;--bg2:#120f2b;--bg-rgb:13,11,31;
+  --sur:#171433;--sur2:#1e1a42;--sur3:#262052;
+  --brd:#2c2560;--brd2:#3a316f;
+  --violet:#7c6cf0;--pink:#ff6fa5;--coral:#ff8c66;--teal:#22d3ee;--amber:#f6b93b;
+  --grn:#34d399;--red:#fb6f92;--warn:#f6b93b;
+  --acc:#7c6cf0;--acc-rgb:124,108,240;--acc-glow:rgba(124,108,240,.18);
+  --tx:#f1eefc;--tx2:#a79cd1;--tx3:#6c62a0;
+  --g-aurora:linear-gradient(135deg,#7c6cf0 0%,#c866ea 45%,#ff6fa5 100%);
+  --g-teal:linear-gradient(135deg,#22d3ee 0%,#7c6cf0 100%);
+  --g-warm:linear-gradient(135deg,#f6b93b 0%,#ff8c66 55%,#ff6fa5 100%);
+  --g-cool:linear-gradient(135deg,#22d3ee 0%,#7c6cf0 55%,#c866ea 100%);
+  --bgglow1:rgba(124,108,240,.20);--bgglow2:rgba(255,111,165,.14);
+  --color-scheme:dark;
+  --fd:'Outfit',sans-serif;--fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+  --r:16px;--r-sm:10px;
+}
+
+/* ═══ THEME: Neon (dark variant — navy/black, cyan+magenta) ═══ */
+html[data-theme="neon"]{
+  --bg:#080a14;--bg2:#0c1020;--bg-rgb:8,10,20;
+  --sur:#10141f;--sur2:#161c2c;--sur3:#1e2638;
+  --brd:#232c40;--brd2:#2e3954;
+  --violet:#5b6cff;--pink:#ff2fb0;--coral:#ff8a3d;--teal:#00d9ff;--amber:#ffd43b;
+  --grn:#2dd4bf;--red:#ff4d7d;--warn:#ffd43b;
+  --acc:#00d9ff;--acc-rgb:0,217,255;--acc-glow:rgba(0,217,255,.18);
+  --tx:#eef3fb;--tx2:#8a93b8;--tx3:#565e82;
+  --g-aurora:linear-gradient(135deg,#00d9ff 0%,#5b6cff 55%,#ff2fb0 100%);
+  --g-teal:linear-gradient(135deg,#00d9ff 0%,#5b6cff 100%);
+  --g-warm:linear-gradient(135deg,#ffd43b 0%,#ff8a3d 55%,#ff2fb0 100%);
+  --g-cool:linear-gradient(135deg,#00d9ff 0%,#5b6cff 55%,#ff2fb0 100%);
+  --bgglow1:rgba(0,217,255,.16);--bgglow2:rgba(255,47,176,.12);
+  --color-scheme:dark;
+}
+/* ═══ THEME: Daylight (light — lavender/white, violet+pink+coral) ═══ */
+html[data-theme="daylight"]{
+  --bg:#f5f4fb;--bg2:#efeefa;--bg-rgb:245,244,251;
+  --sur:#ffffff;--sur2:#f4f2fc;--sur3:#eae6f9;
+  --brd:#e1ddf3;--brd2:#cdc5ec;
+  --violet:#6d5ef2;--pink:#e0518c;--coral:#ea6a3f;--teal:#0a8aa8;--amber:#c96a12;
+  --grn:#0f9d68;--red:#d43a5f;--warn:#c96a12;
+  --acc:#6d5ef2;--acc-rgb:109,94,242;--acc-glow:rgba(109,94,242,.14);
+  --tx:#221c3d;--tx2:#5c5480;--tx3:#8d85ac;
+  --g-aurora:linear-gradient(135deg,#6d5ef2 0%,#a855d6 45%,#e0518c 100%);
+  --g-teal:linear-gradient(135deg,#0a8aa8 0%,#6d5ef2 100%);
+  --g-warm:linear-gradient(135deg,#c96a12 0%,#ea6a3f 55%,#e0518c 100%);
+  --g-cool:linear-gradient(135deg,#0a8aa8 0%,#6d5ef2 55%,#a855d6 100%);
+  --bgglow1:rgba(109,94,242,.10);--bgglow2:rgba(224,81,140,.08);
+  --color-scheme:light;
+}
+/* ═══ THEME: Arctic (light — cool blue-gray/white, blue+teal) ═══ */
+html[data-theme="arctic"]{
+  --bg:#f2f6fa;--bg2:#eaf1f6;--bg-rgb:242,246,250;
+  --sur:#ffffff;--sur2:#eef3f7;--sur3:#dfe9f0;
+  --brd:#d6e2ea;--brd2:#bcd0dd;
+  --violet:#2f6fed;--pink:#0eaab8;--coral:#e2883b;--teal:#0891b2;--amber:#c68a1f;
+  --grn:#0e9f6e;--red:#d5474d;--warn:#c68a1f;
+  --acc:#2f6fed;--acc-rgb:47,111,237;--acc-glow:rgba(47,111,237,.14);
+  --tx:#152531;--tx2:#4d6473;--tx3:#7f97a4;
+  --g-aurora:linear-gradient(135deg,#2f6fed 0%,#0eaab8 60%,#0891b2 100%);
+  --g-teal:linear-gradient(135deg,#0891b2 0%,#2f6fed 100%);
+  --g-warm:linear-gradient(135deg,#c68a1f 0%,#e2883b 55%,#0eaab8 100%);
+  --g-cool:linear-gradient(135deg,#0891b2 0%,#2f6fed 55%,#0eaab8 100%);
+  --bgglow1:rgba(47,111,237,.08);--bgglow2:rgba(14,170,184,.08);
+  --color-scheme:light;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:15px;-webkit-font-smoothing:antialiased;height:100%}
+body{
+  color-scheme:var(--color-scheme);
+  background:var(--bg);
+  background-image:radial-gradient(ellipse 900px 500px at 15% -10%,var(--bgglow1),transparent 60%),
+                    radial-gradient(ellipse 700px 500px at 110% 10%,var(--bgglow2),transparent 60%);
+  background-attachment:fixed;
+  color:var(--tx);font-family:var(--fb);min-height:100%;overflow-x:hidden;
+}
+h1,h2,h3,h4{font-family:var(--fd)}
+button{cursor:pointer;font-family:var(--fb);touch-action:manipulation;border:none;background:none;color:inherit}
+input,select,textarea{font-family:var(--fb)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:2px}
+a{color:var(--violet)}
+
+/* ═══ LAYOUT ═══ */
+#app{display:flex;min-height:100vh}
+#sidebar{
+  width:236px;min-height:100vh;background:var(--sur);border-right:1px solid var(--brd);
+  display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:200;
+  transition:transform .25s ease;overflow-y:auto;
+}
+#main{margin-left:236px;flex:1;padding:20px 22px 56px;min-height:100vh;max-width:1440px}
+body.entry-active #main{padding-bottom:110px}
+@media(max-width:768px){
+  html{height:100vh;height:100dvh}
+  body{height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+  #app{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;min-height:0}
+  #sidebar{transform:translateX(-100%);width:270px}
+  #sidebar.open{transform:translateX(0)}
+  #main{margin-left:0;padding:14px 12px calc(96px + env(safe-area-inset-bottom,0px));min-width:0;max-width:100%}
+  body.entry-active #main{padding-bottom:calc(162px + env(safe-area-inset-bottom,0px))}
+  #bottom-nav{display:flex!important;position:fixed;bottom:0;left:0;right:0;z-index:180;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0)}
+}
+#overlay{position:fixed;inset:0;background:rgba(5,3,15,.6);z-index:190;display:none;backdrop-filter:blur(2px)}
+#overlay.on{display:block}
+.view-end-spacer{height:36px;flex-shrink:0}
+@media(max-width:768px){.view-end-spacer{height:56px}}
+
+#bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:180;
+  background:var(--sur);border-top:1px solid var(--brd);height:60px;align-items:stretch;
+}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.58rem;color:var(--tx3);padding:6px 2px;transition:color .15s}
+.bnav-item.active{color:var(--pink)}
+.bnav-item svg{width:20px;height:20px;flex-shrink:0}
+
+/* ═══ SIDEBAR ═══ */
+.s-logo{padding:20px 18px 14px;border-bottom:1px solid var(--brd);flex-shrink:0}
+.s-logo h1{font-size:1.15rem;letter-spacing:.02em;line-height:1.2;
+  background:var(--g-aurora);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+.s-logo span{font-size:.6rem;color:var(--tx3);font-family:var(--fb);letter-spacing:.14em;text-transform:uppercase}
+.s-sect{padding:14px 16px 6px;font-size:.6rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.s-sel{padding:6px 16px 10px}
+.s-sel label{font-size:.6rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px}
+.s-input{width:100%;background:var(--sur2);border:1px solid var(--brd2);color:var(--tx);border-radius:8px;padding:7px 9px;font-size:.8rem;outline:none;-webkit-appearance:none}
+.s-input:focus{border-color:var(--violet)}
+.nav-i{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:.82rem;color:var(--tx2);border-left:2px solid transparent;transition:all .15s}
+.nav-i:hover{background:var(--sur2);color:var(--tx)}
+.nav-i.active{background:linear-gradient(90deg,rgba(124,108,240,.18),transparent);color:var(--tx);border-left-color:var(--pink);font-weight:600}
+.nav-i svg{width:16px;height:16px;flex-shrink:0;opacity:.75}
+.nav-i.active svg{opacity:1}
+.s-bottom{padding:12px 16px;border-top:1px solid var(--brd);margin-top:auto;flex-shrink:0}
+.install-btn{width:100%;padding:9px;border-radius:10px;background:var(--g-aurora);color:#fff;font-size:.75rem;font-weight:600;text-align:center;margin-bottom:8px}
+.s-foot-note{font-size:.6rem;color:var(--tx3);text-align:center;line-height:1.4}
+
+/* ═══ TOPBAR ═══ */
+#topbar{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+#hamburger{width:38px;height:38px;background:var(--sur);border:1px solid var(--brd);border-radius:10px;display:none;align-items:center;justify-content:center;color:var(--tx);flex-shrink:0}
+@media(max-width:768px){#hamburger{display:flex}}
+.page-title{font-size:1.4rem;font-family:var(--fd);font-weight:700;flex:1;min-width:0}
+.page-sub{font-size:.72rem;color:var(--tx3);margin-top:1px}
+.top-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+
+/* ═══ CARDS / KPI ═══ */
+.card{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:16px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--g-aurora)}
+.kpi.warm::before{background:var(--g-warm)}
+.kpi.cool::before{background:var(--g-cool)}
+.kpi-lbl{font-size:.63rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.kpi-val{font-family:var(--fm);font-size:1.3rem;font-weight:600;line-height:1.1}
+.kpi-sub{font-size:.68rem;color:var(--tx3);margin-top:4px}
+.kpi-ch{font-size:.68rem;font-weight:600;margin-top:3px}
+.kpi-ch.pos{color:var(--grn)}
+.kpi-ch.neg{color:var(--red)}
+
+.stitle{font-family:var(--fd);font-size:.95rem;font-weight:700;margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.stitle small{font-size:.68rem;color:var(--tx3);font-weight:400;font-family:var(--fb)}
+
+/* section color coding */
+.sec-b{border-left:3px solid var(--amber)}
+.sec-d{border-left:3px solid var(--violet)}
+.sec-t{border-left:3px solid var(--teal)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--sur2);color:var(--tx2);border:1px solid var(--brd2)}
+.badge.up{color:var(--grn);background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.25)}
+.badge.dn{color:var(--red);background:rgba(251,111,146,.1);border-color:rgba(251,111,146,.25)}
+
+/* ═══ RING (signature element) ═══ */
+.ring-wrap{display:flex;align-items:center;gap:14px}
+.ring{position:relative;width:104px;height:104px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg);width:100%;height:100%}
+.ring-bg{fill:none;stroke:var(--sur3);stroke-width:9}
+.ring-fg{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+.ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-val b{font-family:var(--fm);font-size:1.15rem}
+.ring-val span{font-size:.55rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em}
+
+/* ═══ BUTTONS ═══ */
+.btn{padding:8px 14px;border-radius:10px;font-size:.8rem;font-weight:600;background:var(--sur2);border:1px solid var(--brd2);color:var(--tx)}
+.btn:hover{border-color:var(--violet)}
+.btn.primary{background:var(--g-aurora);color:#fff;border:none}
+.btn.danger{background:rgba(251,111,146,.12);color:var(--red);border-color:rgba(251,111,146,.3)}
+.btn.sm{padding:5px 10px;font-size:.72rem}
+.btn.block{width:100%}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.icon-btn{width:36px;height:36px;border-radius:10px;background:var(--sur2);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;color:var(--tx2);flex-shrink:0}
+.icon-btn svg{width:16px;height:16px}
+.icon-btn:hover{color:var(--tx);border-color:var(--violet)}
+
+/* ═══ FORMS ═══ */
+.field{margin-bottom:12px}
+.field label{font-size:.72rem;color:var(--tx2);display:block;margin-bottom:5px;font-weight:500}
+.field input,.field select{width:100%;background:var(--sur2);border:1px solid var(--brd2);color:var(--tx);border-radius:10px;padding:9px 11px;font-size:.88rem;outline:none;font-family:var(--fm)}
+.field input:focus,.field select:focus{border-color:var(--violet)}
+.field .hint{font-size:.65rem;color:var(--tx3);margin-top:3px}
+.frow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.frow{grid-template-columns:1fr 1fr}}
+
+/* ═══ TABS ═══ */
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:10px;font-size:.78rem;font-weight:600;background:var(--sur2);border:1px solid var(--brd2);color:var(--tx2)}
+.tab.on{background:var(--g-aurora);color:#fff;border:none}
+
+/* ═══ TABLE ═══ */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--brd);border-radius:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:.76rem;white-space:nowrap}
+th{background:var(--sur2);color:var(--tx3);text-align:left;padding:8px 10px;font-weight:600;text-transform:uppercase;font-size:.62rem;letter-spacing:.04em;position:sticky;top:0}
+td{padding:7px 10px;border-top:1px solid var(--brd);font-family:var(--fm)}
+tr.day-empty td{color:var(--tx3);opacity:.5}
+tr:hover td{background:var(--sur2)}
+.td-pos{color:var(--grn)}
+.td-neg{color:var(--red)}
+
+/* ═══ DAY PICKER ═══ */
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.day-cell{aspect-ratio:1;border-radius:9px;background:var(--sur2);border:1px solid var(--brd2);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-family:var(--fm);color:var(--tx2);position:relative}
+.day-cell.filled{background:rgba(124,108,240,.15);border-color:var(--violet);color:var(--tx)}
+.day-cell.active{background:var(--g-aurora);color:#fff;border:none;font-weight:700}
+.day-cell.filled::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--teal)}
+.day-cell.active::after{display:none}
+
+/* ═══ EMPTY / TOAST ═══ */
+.empty{text-align:center;padding:50px 20px;color:var(--tx3)}
+.empty svg{width:44px;height:44px;margin-bottom:12px;opacity:.4}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--sur2);border:1px solid var(--brd2);color:var(--tx);padding:10px 18px;border-radius:12px;font-size:.8rem;z-index:400;opacity:0;transition:all .25s;box-shadow:0 8px 30px rgba(0,0,0,.4);display:flex;align-items:center;gap:8px}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{border-color:rgba(52,211,153,.4)}
+#toast.err{border-color:rgba(251,111,146,.4)}
+@media(min-width:769px){#toast{bottom:24px}}
+
+.chart-box{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.chart-box canvas{max-height:260px}
+
+/* ═══ STICKY SAVE BAR (entry view) ═══ */
+#entry-savebar{position:fixed;left:236px;right:0;bottom:0;z-index:150;padding:14px 22px;
+  background:linear-gradient(180deg,rgba(var(--bg-rgb),0),rgba(var(--bg-rgb),.85) 35%,var(--bg) 65%);
+  display:none;justify-content:flex-end;pointer-events:none}
+#entry-savebar.on{display:flex}
+#entry-savebar .btn{pointer-events:auto;box-shadow:0 10px 30px rgba(124,108,240,.35)}
+@media(max-width:768px){
+  #entry-savebar{left:0;bottom:60px;padding:10px 12px}
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+
+.pill-select{display:flex;gap:6px;background:var(--sur2);border:1px solid var(--brd2);border-radius:12px;padding:3px}
+.pill-select button{flex:1;padding:6px 0;border-radius:9px;font-size:.75rem;font-weight:600;color:var(--tx2)}
+.pill-select button.on{background:var(--g-aurora);color:#fff}
+
+.propcard{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.propcard b{font-family:var(--fd);font-size:.95rem}
+.propcard .meta{font-size:.68rem;color:var(--tx3);margin-top:2px}
+
+/* ═══ THEME PICKER ═══ */
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.theme-swatch{border:2px solid var(--brd);border-radius:14px;padding:10px;cursor:pointer;background:var(--sur2);transition:border-color .15s}
+.theme-swatch.on{border-color:var(--violet);box-shadow:0 0 0 3px var(--acc-glow)}
+.theme-swatch .tsw-preview{height:44px;border-radius:9px;margin-bottom:8px;position:relative;overflow:hidden}
+.theme-swatch .tsw-preview i{position:absolute;bottom:5px;left:5px;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.9)}
+.theme-swatch .tsw-name{font-size:.8rem;font-weight:700;font-family:var(--fd)}
+.theme-swatch .tsw-kind{font-size:.62rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}
+.theme-swatch.on .tsw-name{color:var(--violet)}
+
+/* ═══ PROGRESS BAR ═══ */
+.progress{height:8px;border-radius:5px;background:var(--sur3);overflow:hidden;position:relative}
+.progress i{display:block;height:100%;border-radius:5px;background:var(--g-aurora);transition:width .4s ease}
+.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.progress-row .progress{flex:1}
+.progress-lbl{font-size:.68rem;color:var(--tx3);white-space:nowrap;font-family:var(--fm)}
+
+/* ═══ STICKY FIRST COLUMN ═══ */
+.tbl-wrap table th:first-child,.tbl-wrap table td:first-child{position:sticky;left:0;z-index:3;background:var(--sur2);box-shadow:2px 0 4px rgba(0,0,0,.15)}
+.tbl-wrap table th:first-child{z-index:4}
+.tbl-wrap table tr:hover td:first-child{background:var(--sur3)}
+tr.day-empty td:first-child{background:var(--sur2)}
+tr.day-outlier td{background:rgba(251,111,146,.06)}
+tr.day-outlier td:first-child{background:rgba(251,111,146,.14)}
+
+/* ═══ CHECK ROW (personalization / widget toggles) ═══ */
+.chk-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--brd)}
+.chk-row:last-child{border-bottom:none}
+.chk-row span{font-size:.82rem}
+.switch{position:relative;width:38px;height:22px;background:var(--sur3);border-radius:20px;flex-shrink:0;border:1px solid var(--brd2)}
+.switch i{position:absolute;top:1px;left:1px;width:18px;height:18px;border-radius:50%;background:var(--tx3);transition:all .2s}
+.switch.on{background:var(--g-aurora);border-color:transparent}
+.switch.on i{left:17px;background:#fff}
+
+/* ═══ RANK LIST ═══ */
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--brd)}
+.rank-item:last-child{border-bottom:none}
+.rank-num{width:22px;height:22px;border-radius:7px;background:var(--sur3);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0}
+.rank-num.gold{background:var(--g-warm);color:#3a2400}
+.rank-info{flex:1;font-size:.78rem}
+.rank-val{font-family:var(--fm);font-size:.82rem;font-weight:600}
+
+/* ═══ PRINT ═══ */
+@media print{
+  #sidebar,#bottom-nav,#hamburger,#entry-savebar,.btn-row,#toast,#modal-root,.tabs,#topbar .top-actions{display:none!important}
+  #main{margin-left:0!important;padding:0!important}
+  body{background:#fff!important}
+  .card,.chart-box,.kpi,.tbl-wrap{border-color:#ccc!important;break-inside:avoid}
+}
+
+.ccard{background:var(--sur2);border:1px solid var(--brd2);border-radius:12px;padding:12px;flex:1;min-width:110px}
+.ccard-l{font-size:.63rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}
+.ccard-v{font-family:var(--fm);font-weight:700;font-size:1.05rem;margin-top:4px}
+.ccards{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(5,3,15,.7);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+.modal-bg.on{display:flex}
+.modal{background:var(--sur);border:1px solid var(--brd2);border-radius:var(--r);padding:20px;max-width:420px;width:100%;max-height:88vh;overflow-y:auto}
+.modal h3{font-size:1.05rem;margin-bottom:14px}
+
+/* ═══ AUTH SCREEN ═══ */
+#login-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:var(--bg);background-image:radial-gradient(ellipse 900px 500px at 15% -10%,var(--bgglow1),transparent 60%),radial-gradient(ellipse 700px 500px at 110% 10%,var(--bgglow2),transparent 60%)}
+#login-screen.hidden{display:none}
+.auth-box{max-width:380px;width:100%;background:var(--sur);border:1px solid var(--brd);border-radius:var(--r);padding:28px 24px}
+.auth-logo{text-align:center;margin-bottom:20px}
+.auth-logo h1{font-size:1.4rem;font-weight:800;background:var(--g-aurora);-webkit-background-clip:text;background-clip:text;color:transparent}
+.auth-logo span{font-size:.68rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.12em}
+.auth-tabs{display:flex;background:var(--sur2);border-radius:10px;padding:3px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:8px;font-size:.8rem;font-weight:600;color:var(--tx2);border:none;background:none}
+.auth-tab.on{background:var(--sur);color:var(--violet);box-shadow:0 1px 6px rgba(0,0,0,.15)}
+.auth-msg{font-size:.78rem;padding:9px 12px;border-radius:9px;margin-bottom:12px;display:none}
+.auth-msg.show{display:block}
+.auth-err{background:rgba(251,111,146,.12);color:var(--red);border:1px solid rgba(251,111,146,.3)}
+.auth-ok{background:rgba(52,211,153,.12);color:var(--grn);border:1px solid rgba(52,211,153,.3)}
+.auth-loading{color:var(--tx3)}
+.forgot-link{display:block;text-align:right;font-size:.72rem;color:var(--tx3);margin:-6px 0 14px;cursor:pointer}
+.forgot-link:hover{color:var(--violet)}
+
+/* ═══ TEAM / ROLES ═══ */
+.role-badge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;margin:0 16px 10px}
+.role-badge.admin{background:rgba(246,185,59,.14);color:var(--amber)}
+.role-badge.manager{background:rgba(124,108,240,.14);color:var(--violet)}
+.role-badge.viewer{background:var(--sur2);color:var(--tx3)}
+.team-member{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--brd)}
+.team-member:last-child{border-bottom:none}
+.team-avatar{width:32px;height:32px;border-radius:50%;background:var(--g-aurora);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.78rem;flex-shrink:0}
+.team-info{flex:1;min-width:0}
+.team-email{font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.team-role{font-size:.65rem;color:var(--tx3);text-transform:capitalize}
+.conn-dot{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;color:var(--tx3)}
+.conn-dot i{width:7px;height:7px;border-radius:50%;background:var(--tx3);display:inline-block}
+.conn-dot.online i{background:var(--grn)}
+.conn-dot.offline i{background:var(--red)}
+.conn-dot.syncing i{background:var(--amber);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div id="login-screen">
+  <div class="auth-box">
+    <div class="auth-logo"><h1>BufetCost</h1><span>F&amp;B P&amp;L Analytics</span></div>
+    <div class="auth-tabs">
+      <button class="auth-tab on" id="tab-login" onclick="switchAuthTab('login')">Logowanie</button>
+      <button class="auth-tab" id="tab-reg" onclick="switchAuthTab('reg')">Rejestracja</button>
+    </div>
+    <div class="auth-msg auth-err" id="auth-err"></div>
+    <div class="auth-msg auth-ok" id="auth-ok"></div>
+    <div class="auth-msg auth-loading" id="auth-loading">⏳ Łączenie...</div>
+    <div id="form-login">
+      <div class="field"><label>Email</label><input class="s-input" type="email" id="l-email" placeholder="ty@hotel.pl" onkeydown="if(event.key==='Enter')authLogin()"></div>
+      <div class="field"><label>Hasło</label><input class="s-input" type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')authLogin()"></div>
+      <span class="forgot-link" onclick="authReset()">Zapomniałem hasła</span>
+      <button class="btn primary block" onclick="authLogin()">Zaloguj się</button>
+    </div>
+    <div id="form-reg" style="display:none">
+      <div class="field"><label>Email</label><input class="s-input" type="email" id="r-email" placeholder="ty@hotel.pl" onkeydown="if(event.key==='Enter')authRegister()"></div>
+      <div class="field"><label>Hasło (min. 6 znaków)</label><input class="s-input" type="password" id="r-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')authRegister()"></div>
+      <div class="field"><label>Powtórz hasło</label><input class="s-input" type="password" id="r-pass2" placeholder="••••••••" onkeydown="if(event.key==='Enter')authRegister()"></div>
+      <button class="btn primary block" onclick="authRegister()">Utwórz konto</button>
+    </div>
+  </div>
+</div>
+<div id="app">
+  <aside id="sidebar"></aside>
+  <div id="overlay" onclick="closeSidebar()"></div>
+  <main id="main">
+    <div id="topbar"></div>
+    <div id="view-root"></div>
+  </main>
+  <nav id="bottom-nav"></nav>
+  <div id="entry-savebar"></div>
+</div>
+<div id="toast"></div>
+<div id="modal-root"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════
+   BufetCost — F&B P&L Analytics PWA
+   Data layer: localStorage now, key-shape ready for Firestore later.
+   Collections (mirrored 1:1 to future Firestore collections):
+     properties/{id}                -> {id,name,createdAt}
+     days/{pid}_{ym}_{dd}           -> {pid,ym,dd,b:{...},d:{...},cuk}
+     monthMeta/{pid}_{ym}           -> {pid,ym,labor}
+═══════════════════════════════════════════════════════ */
+var SEED_SHELLTER={"2026-01":[[401,84,10,4854.58,70849.87,261.77,240,63,49,3534.65,22723.49,5283.75,353.92],[365,82,9,6120.07,20944.87,593.8,172,68,24,4972.56,15888.77,2625.0,1538.45],[258,83,2,4055.48,18285.14,203.7,144,69,12,2794.95,14347.22,1500.0,979.35],[226,81,4,2905.48,12567.13,387.04,110,43,18,1255.5,10183.57,2087.04,556.61],[159,57,4,2923.11,9324.07,356.49,81,28,10,3956.68,7138.89,1062.5,604.83],[118,40,0,1354.45,4027.78,0.0,47,21,0,2400.94,3944.44,0.0,909.11],[55,24,0,1587.64,5041.67,0.0,58,10,0,2319.97,5069.44,0.0,112.29],[70,15,0,1567.06,4064.82,0.0,31,15,0,2163.83,2611.11,375.0,285.22],[55,15,0,1379.01,4319.44,0.0,41,16,0,1235.62,3810.18,0.0,948.84],[57,18,0,1026.33,5106.48,0.0,41,16,0,1185.59,3180.56,3315.0,355.33],[67,20,0,793.21,2166.67,203.7,25,9,0,524.33,1972.22,0.0,0.0],[33,9,0,1508.71,1724.13,0.0,25,9,0,1083.03,2000.0,203.7,0.0],[26,9,4,1438.51,1740.74,205.97,22,8,1,3752.57,1750.0,462.97,0.0],[23,8,3,929.64,2263.89,204.72,24,10,1,2251.66,1930.56,1.25,1050.37],[30,10,1,4309.01,14082.33,1.02,24,8,3,2594.54,1972.22,251.25,1148.75],[128,1,5,2868.63,5818.18,5.1,60,13,3,2690.1,5133.07,32209.21,437.44],[86,16,6,448.19,7773.14,187.42,72,15,7,1137.01,5708.33,850.0,846.41],[102,17,2,793.73,5310.19,183.33,57,19,8,1685.43,6027.78,975.0,571.96],[69,25,0,3685.51,6120.37,0.0,65,34,0,2308.07,5675.93,0.0,138.16],[79,36,0,3064.76,7842.59,0.0,77,41,3,3349.77,7111.11,854.67,1174.16],[97,43,0,2528.04,7486.11,0.0,76,45,2,4637.43,7458.33,2.5,88.08],[91,43,3,2913.61,8841.22,3.06,88,45,0,3166.17,8388.89,252.5,550.63],[104,49,4,2981.12,10095.84,205.74,94,49,7,3479.03,10134.26,627.5,590.21],[122,53,2,2028.4,11839.55,2.04,110,56,1,3276.19,10268.52,125.0,1492.1],[146,59,4,2384.31,5379.63,366.67,55,38,0,1611.45,5416.67,324.0,1651.42],[62,42,4,2064.48,7203.7,101.85,75,46,3,2497.46,7583.33,375.0,787.38],[82,48,3,2875.07,7444.41,305.56,69,46,2,2996.8,7888.89,187.5,674.37],[76,45,0,1098.12,6574.08,0.0,73,45,4,4719.5,7511.57,500.0,438.96],[74,49,0,2793.39,8083.33,0.0,93,55,0,1315.38,9400.46,0.0,580.21],[91,53,4,4186.08,10592.59,6.12,117,45,0,6667.83,10611.11,250.0,622.56],[131,45,0,3315.61,12568.68,0.0,114,50,12,2889.78,11097.84,1412.0,899.74]],"2026-02":[[153,55,1,3659.21,8962.2,101.85,80,53,4,2315.57,8028.39,500.0,866.2],[100,62,0,2709.21,12653.38,0.0,118,75,8,4510.52,12013.89,937.5,910.11],[163,69,1,3595.93,12587.0,1.02,119,89,3,5129.36,12430.56,251.25,195.15],[139,96,1,5050.58,13342.59,1.02,135,90,2,4992.72,14027.78,126.27,985.15],[141,100,1,3650.21,14773.14,1.02,157,99,5,1770.79,15902.78,625.0,1717.68],[166,106,1,4448.86,14654.85,1.02,149,80,2,5148.68,14527.78,250.0,1459.39],[178,86,5,4085.72,15468.41,432.86,141,71,3,5018.65,14111.11,375.0,1326.17],[184,77,1,2539.9,9518.52,101.85,98,51,3,2580.86,9750.0,375.0,434.78],[105,53,0,5706.92,12078.7,0.0,129,71,4,2831.76,12736.11,475.0,554.78],[136,74,0,2733.78,11805.55,0.0,128,73,2,4368.66,12611.11,250.0,713.24],[137,75,1,3019.78,10958.33,1.02,117,65,6,5235.16,11291.67,626.25,1279.48],[128,72,1,2900.32,10095.85,1.02,110,66,4,5176.04,10625.0,500.0,926.69],[117,66,0,4073.89,12615.0,0.0,106,47,0,4673.67,9583.95,843.75,564.12],[154,53,3,3512.04,15850.81,275.0,120,41,31,2637.66,10829.25,3656.25,664.75],[206,49,8,2539.36,12418.63,774.08,111,48,5,2327.24,10486.76,377.5,1270.13],[148,53,4,3609.01,12077.15,185.38,124,56,4,3603.87,11125.0,562.5,201.09],[145,71,5,3685.58,10674.37,5.1,106,54,9,4534.42,10083.33,981.0,410.27],[127,61,0,3648.67,11907.87,0.0,229,104,0,2943.39,11180.56,0.0,829.91],[136,67,0,3943.54,13861.84,0.0,146,73,7,4368.43,13291.67,812.5,1963.86],[163,83,0,2883.84,17227.9,0.0,174,71,6,4758.61,15792.35,750.0,2121.3],[214,79,0,3901.19,16658.73,0.0,163,59,20,5585.08,14736.67,2437.0,1449.57],[211,67,5,3806.62,12133.22,725.0,121,46,6,1747.98,11263.89,725.0,924.13],[146,58,2,4363.86,11969.97,102.97,128,58,3,4719.21,11834.14,251.25,884.9],[147,62,1,1785.56,12993.12,1.02,136,69,5,3664.45,13153.59,501.25,497.29],[149,73,5,5313.78,12724.46,321.86,135,71,0,3291.3,12902.78,250.0,668.69],[151,73,0,2345.19,11628.46,0.0,127,64,4,2057.96,12138.89,652.0,176.8],[136,64,0,2871.81,12763.89,0.0,129,46,1,5403.87,11726.85,112.5,337.44],[174,52,6,2269.53,13249.01,611.1,131,36,4,1144.77,11306.64,475.0,133.31]]};
+/* Compact row -> {ad,ch,ex,cost,rev,revEx} x2 + cuk */
+
+function seedDayFromRow(row){
+  return {
+    b:{ad:row[0],ch:row[1],ex:row[2],cost:row[3],rev:row[4],revEx:row[5]},
+    d:{ad:row[6],ch:row[7],ex:row[8],cost:row[9],rev:row[10],revEx:row[11]},
+    cuk:row[12]
+  };
+}
+function seedShellterData(){
+  var name='Shellter';
+  var existing=getProps().find(function(p){return p.name===name});
+  var pid=existing?existing.id:addProperty(name);
+  Object.keys(SEED_SHELLTER).forEach(function(ym){
+    SEED_SHELLTER[ym].forEach(function(row,i){
+      saveDay(pid,ym,i+1,seedDayFromRow(row));
+    });
+  });
+  refreshProps();
+  S.pid=pid;lsSet('lastPid',pid);
+  S.ym='2026-01';lsSet('lastYm','2026-01');
+  return pid;
+}
+
+
+var LS_PREFIX='bc-';
+try{
+  var _savedThemeRaw=localStorage.getItem(LS_PREFIX+'theme');
+  var _savedTheme=_savedThemeRaw?JSON.parse(_savedThemeRaw):'aurora';
+  var _actualEarly=_savedTheme==='auto'?(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'aurora':'daylight'):_savedTheme;
+  document.documentElement.setAttribute('data-theme',_actualEarly);
+}catch(e){}
+
+/* ═══════════════════════════════════════════════════════
+   FIREBASE CONFIG — projekt "p-and-l-analyzer"
+═══════════════════════════════════════════════════════ */
+var FB_CFG={
+  apiKey:'AIzaSyDH91H4cBn_2uEm9tNe2XRGRegWD-EQGeA',
+  authDomain:'p-and-l-analyzer.firebaseapp.com',
+  projectId:'p-and-l-analyzer',
+  storageBucket:'p-and-l-analyzer.firebasestorage.app',
+  messagingSenderId:'146926568805',
+  appId:'1:146926568805:web:2486b98ba408675f1d4d8c'
+};
+var FB_CONFIGURED=FB_CFG.apiKey!=='YOUR_API_KEY';
+var fbApp=null,auth=null,db=null;
+if(FB_CONFIGURED){
+  try{
+    fbApp=firebase.initializeApp(FB_CFG);
+    auth=firebase.auth();
+    db=firebase.firestore();
+    db.enablePersistence().catch(function(){});
+  }catch(e){console.warn('Firebase init failed:',e.message);FB_CONFIGURED=false;}
+}
+
+function lsGet(k,def){try{var v=localStorage.getItem(LS_PREFIX+k);return v?JSON.parse(v):def}catch(e){return def}}
+function lsSet(k,v){try{localStorage.setItem(LS_PREFIX+k,JSON.stringify(v));return true}catch(e){return false}}
+function lsDel(k){localStorage.removeItem(LS_PREFIX+k)}
+function lsKeys(prefix){return Object.keys(localStorage).filter(function(k){return k.indexOf(LS_PREFIX+prefix)===0}).map(function(k){return k.slice(LS_PREFIX.length)})}
+
+/* ═══ CONNECTION STATUS (Firestore sync feedback) ═══ */
+var _pendingWrites=0;
+function setConnStatus(status){
+  window._connStatus=status;
+  var el=document.getElementById('conn-status');
+  if(!el)return;
+  var labels={online:'Online',offline:'Offline — dane lokalne',syncing:'Synchronizacja...'};
+  el.className='conn-dot '+status;
+  el.innerHTML='<i></i>'+(labels[status]||status);
+}
+function connBeginWrite(){_pendingWrites++;setConnStatus('syncing')}
+function connEndWrite(ok){
+  _pendingWrites=Math.max(0,_pendingWrites-1);
+  if(_pendingWrites===0)setConnStatus(navigator.onLine?'online':'offline');
+}
+function fsWrite(ref,data,merge){
+  if(!S.uid||!db)return;
+  connBeginWrite();
+  ref.set(data,merge?{merge:true}:undefined).then(function(){connEndWrite(true)}).catch(function(){connEndWrite(false)});
+}
+function fsDelete(ref){
+  if(!S.uid||!db)return;
+  connBeginWrite();
+  ref.delete().then(function(){connEndWrite(true)}).catch(function(){connEndWrite(false)});
+}
+window.addEventListener('online',function(){if(_pendingWrites===0)setConnStatus('online')});
+window.addEventListener('offline',function(){setConnStatus('offline')});
+
+/* ---- Properties (top-level Firestore collection, shared via memberEmails) ---- */
+function getProps(){return lsGet('properties',[])}
+function saveProps(a){lsSet('properties',a)}
+function addProperty(name){
+  var id='p'+Date.now();
+  var p={id:id,name:name,ownerEmail:S.userEmailLower,memberEmails:[S.userEmailLower],
+    members:[{email:S.userEmailLower,role:'admin'}],targetFb:30,createdAt:Date.now()};
+  var a=getProps();a.push(p);saveProps(a);
+  if(S.uid)fsWrite(db.collection('properties').doc(id),p);
+  return id;
+}
+function updatePropertyLocal(p){
+  var a=getProps();var i=a.findIndex(function(x){return x.id===p.id});
+  if(i>=0)a[i]=p;else a.push(p);
+  saveProps(a);
+}
+function renameProperty(id,name){
+  var a=getProps();var p=a.find(function(x){return x.id===id});
+  if(p){p.name=name;saveProps(a);if(S.uid)fsWrite(db.collection('properties').doc(id),{name:name},true);}
+}
+function deleteProperty(id){
+  var a=getProps().filter(function(x){return x.id!==id});saveProps(a);
+  lsKeys('day-'+id+'-').forEach(function(k){lsDel(k)});
+  lsKeys('meta-'+id+'-').forEach(function(k){lsDel(k)});
+  if(S.uid)fsDelete(db.collection('properties').doc(id));
+}
+
+/* ---- Roles & permissions ---- */
+function getMyRole(prop){
+  if(!prop)return null;
+  if(prop.ownerEmail&&prop.ownerEmail===S.userEmailLower)return 'admin';
+  var m=(prop.members||[]).find(function(x){return x.email===S.userEmailLower});
+  return m?m.role:null;
+}
+function refreshCurrentRole(){
+  var prop=S.props.find(function(p){return p.id===S.pid});
+  S.currentRole=getMyRole(prop)||(prop?'viewer':null);
+}
+function canEdit(){return S.currentRole==='admin'||S.currentRole==='manager'}
+function canManageTeam(){return S.currentRole==='admin'}
+function inviteMemberToProperty(pid,email,role){
+  var lower=(email||'').trim().toLowerCase();
+  if(!lower||lower.indexOf('@')===-1)return {ok:false,msg:'Podaj prawidłowy adres email'};
+  var a=getProps();var prop=a.find(function(x){return x.id===pid});
+  if(!prop)return {ok:false,msg:'Nie znaleziono obiektu'};
+  prop.members=prop.members||[{email:prop.ownerEmail,role:'admin'}];
+  prop.memberEmails=prop.memberEmails||[prop.ownerEmail];
+  if(prop.memberEmails.indexOf(lower)!==-1)return {ok:false,msg:'Ta osoba już ma dostęp'};
+  prop.members.push({email:lower,role:role||'manager'});
+  prop.memberEmails.push(lower);
+  saveProps(a);
+  if(S.uid)fsWrite(db.collection('properties').doc(pid),{members:prop.members,memberEmails:prop.memberEmails},true);
+  return {ok:true};
+}
+function removeMemberFromProperty(pid,email){
+  var a=getProps();var prop=a.find(function(x){return x.id===pid});
+  if(!prop)return;
+  prop.members=(prop.members||[]).filter(function(m){return m.email!==email});
+  prop.memberEmails=(prop.memberEmails||[]).filter(function(e){return e!==email});
+  saveProps(a);
+  if(S.uid)fsWrite(db.collection('properties').doc(pid),{members:prop.members,memberEmails:prop.memberEmails},true);
+}
+
+/* ---- Day records ---- */
+function emptyDay(){return {b:{ad:0,ch:0,ex:0,cost:0,rev:0,revEx:0},d:{ad:0,ch:0,ex:0,cost:0,rev:0,revEx:0},cuk:0}}
+function dayKey(pid,ym,dd){return 'day-'+pid+'-'+ym+'-'+String(dd).padStart(2,'0')}
+function getDay(pid,ym,dd){return lsGet(dayKey(pid,ym,dd),null)}
+function saveDay(pid,ym,dd,rec){
+  lsSet(dayKey(pid,ym,dd),rec);
+  if(S.uid)fsWrite(db.collection('properties/'+pid+'/days').doc(ym+'-'+String(dd).padStart(2,'0')),rec);
+}
+function hasDay(pid,ym,dd){return lsGet(dayKey(pid,ym,dd),null)!==null}
+
+/* ---- Month meta (manual monthly labor cost + budget, one doc per month) ---- */
+function metaKey(pid,ym){return 'meta-'+pid+'-'+ym}
+function getMeta(pid,ym){return lsGet(metaKey(pid,ym),{labor:0})}
+function saveMeta(pid,ym,m){
+  var cur=getMeta(pid,ym);var merged=Object.assign({},cur,m);
+  lsSet(metaKey(pid,ym),merged);
+  if(S.uid)fsWrite(db.collection('properties/'+pid+'/monthMeta').doc(ym),merged,true);
+}
+
+/* ---- Date helpers ---- */
+var MONTHS_FULL=['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+var MONTHS_SHORT=['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+function dim(ym){var p=ym.split('-');return new Date(+p[0],+p[1],0).getDate()}
+function mLabel(ym){if(!ym)return '—';var p=ym.split('-');return MONTHS_SHORT[+p[1]-1]+' '+p[0]}
+function mLabelFull(ym){if(!ym)return '—';var p=ym.split('-');return MONTHS_FULL[+p[1]-1]+' '+p[0]}
+function prevM(ym){var p=ym.split('-'),y=+p[0],m=+p[1];return m===1?(y-1)+'-12':y+'-'+String(m-1).padStart(2,'0')}
+function nextM(ym){var p=ym.split('-'),y=+p[0],m=+p[1];return m===12?(y+1)+'-01':y+'-'+String(m+1).padStart(2,'0')}
+function yoyM(ym){var p=ym.split('-');return (+p[0]-1)+'-'+p[1]}
+function todayYM(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function fmt(v,unit){v=v||0;var s=v.toLocaleString('pl-PL',{maximumFractionDigits:0,minimumFractionDigits:0});return s+(unit===false?'':' zł')}
+function fmt2(v){v=v||0;return v.toLocaleString('pl-PL',{maximumFractionDigits:2,minimumFractionDigits:2})}
+function fmtPct(v){if(v===null||v===undefined||!isFinite(v))return '—';return v.toFixed(1)+'%'}
+function fmtCompact(v){v=v||0;var a=Math.abs(v);if(a>=1000000)return (v/1000000).toFixed(1)+'M zł';if(a>=1000)return (v/1000).toFixed(1)+'k zł';return Math.round(v)+' zł'}
+function safeDiv(a,b){return b?a/b:0}
+
+/* ═══════════════════════════════════════════════════════
+   CALC ENGINE — mirrors the Excel workbook formulas exactly:
+   Śniadania / Kolacje sections carry running (narastająco) sums;
+   Śniadania+Kolacje section is fully derived; bottom summary
+   uses the manual monthly labor input.
+═══════════════════════════════════════════════════════ */
+function calcMonth(pid,ym){
+  var n=dim(ym);
+  var cum={bG:0,bC:0,bR:0, dG:0,dC:0,dR:0, tC:0,tR:0};
+  var days=[];
+  for(var day=1;day<=n;day++){
+    var rec=getDay(pid,ym,day)||emptyDay();
+    var b=rec.b||{ad:0,ch:0,ex:0,cost:0,rev:0,revEx:0};
+    var d=rec.d||{ad:0,ch:0,ex:0,cost:0,rev:0,revEx:0};
+    var cuk=rec.cuk||0;
+
+    var bSum=(b.ad||0)+(b.ch||0)+(b.ex||0);
+    var bRevT=(b.rev||0)+(b.revEx||0);
+    cum.bG+=bSum;cum.bC+=(b.cost||0);cum.bR+=bRevT;
+
+    var dSum=(d.ad||0)+(d.ch||0)+(d.ex||0);
+    var dRevT=(d.rev||0)+(d.revEx||0);
+    cum.dG+=dSum;cum.dC+=(d.cost||0);cum.dR+=dRevT;
+
+    var costCombinedDay=(b.cost||0)+(d.cost||0);
+    var costTotalDay=costCombinedDay+cuk;
+    var revCombinedDay=bRevT+dRevT;
+    cum.tC+=costTotalDay;cum.tR+=revCombinedDay;
+
+    days.push({
+      day:day,hasData:!!getDay(pid,ym,day),
+      b:{
+        ad:b.ad||0,ch:b.ch||0,ex:b.ex||0,cost:b.cost||0,rev:b.rev||0,revEx:b.revEx||0,
+        sum:bSum,sumCum:cum.bG,costCum:cum.bC,revT:bRevT,revCum:cum.bR,
+        costPerG:safeDiv(b.cost||0,bSum),costPerGCum:safeDiv(cum.bC,cum.bG),
+        avgRevG:safeDiv(bRevT,bSum),avgRevGCum:safeDiv(cum.bR,cum.bG),
+        fbPct:safeDiv(b.cost||0,bRevT)*100,fbPctCum:safeDiv(cum.bC,cum.bR)*100
+      },
+      d:{
+        ad:d.ad||0,ch:d.ch||0,ex:d.ex||0,cost:d.cost||0,rev:d.rev||0,revEx:d.revEx||0,
+        sum:dSum,sumCum:cum.dG,costCum:cum.dC,revT:dRevT,revCum:cum.dR,
+        costPerG:safeDiv(d.cost||0,dSum),costPerGCum:safeDiv(cum.dC,cum.dG),
+        avgRevG:safeDiv(dRevT,dSum),avgRevGCum:safeDiv(cum.dR,cum.dG),
+        fbPct:safeDiv(d.cost||0,dRevT)*100,fbPctCum:safeDiv(cum.dC,cum.dR)*100
+      },
+      cuk:cuk,
+      t:{
+        costDay:costCombinedDay,costTotalDay:costTotalDay,costCum:cum.tC,
+        revDay:revCombinedDay,revCum:cum.tR,
+        fbPctCum:safeDiv(cum.tC,cum.tR)*100
+      }
+    });
+  }
+  var meta=getMeta(pid,ym);
+  var mealsTotal=cum.bG+cum.dG;
+  var avgRevPerMeal=safeDiv(cum.tR,mealsTotal);
+  var avgCostPerMeal=safeDiv(cum.tC,mealsTotal);
+  var avgServicePerMeal=safeDiv(meta.labor||0,mealsTotal);
+  var foodLaborPerMeal=avgCostPerMeal+avgServicePerMeal;
+  var incomePerMeal=avgRevPerMeal-foodLaborPerMeal;
+  var profitPct=safeDiv(incomePerMeal,avgRevPerMeal)*100;
+  var totalProfitPLN=incomePerMeal*mealsTotal;
+
+  return {
+    pid:pid,ym:ym,days:days,
+    totals:{
+      bGuests:cum.bG,dGuests:cum.dG,mealsTotal:mealsTotal,
+      bCost:cum.bC,bRev:cum.bR,dCost:cum.dC,dRev:cum.dR,
+      cukSum:days.reduce(function(s,x){return s+x.cuk},0),
+      costTotal:cum.tC,revTotal:cum.tR,
+      fbCostPct:safeDiv(cum.tC,cum.tR)*100,
+      laborMonthly:meta.labor||0,
+      avgRevPerMeal:avgRevPerMeal,avgCostPerMeal:avgCostPerMeal,avgServicePerMeal:avgServicePerMeal,
+      foodLaborPerMeal:foodLaborPerMeal,incomePerMeal:incomePerMeal,profitPct:profitPct,totalProfitPLN:totalProfitPLN
+    }
+  };
+}
+function getAllMonthsWithData(pid){
+  var pref='day-'+pid+'-';
+  var set={};
+  lsKeys(pref).forEach(function(k){
+    var rest=k.slice(pref.length); // ym-dd
+    var ym=rest.slice(0,7);
+    set[ym]=true;
+  });
+  return Object.keys(set).sort();
+}
+
+/* ═══ TARGET F&B COST % (configurable, per property, default 30) ═══ */
+function getTargetFB(pid){
+  var a=getProps();var p=a.find(function(x){return x.id===pid});
+  return (p&&typeof p.targetFb==='number')?p.targetFb:lsGet('target-'+(pid||'default'),30);
+}
+function setTargetFB(pid,val){
+  lsSet('target-'+pid,val);
+  var a=getProps();var p=a.find(function(x){return x.id===pid});
+  if(p){p.targetFb=val;saveProps(a);}
+  if(S.uid)fsWrite(db.collection('properties').doc(pid),{targetFb:val},true);
+}
+
+/* ═══ BUDGETS (monthly plan vs actual) ═══ */
+function budgetKey(pid,ym){return 'budget-'+pid+'-'+ym}
+function getBudget(pid,ym){return lsGet(budgetKey(pid,ym),{rev:0,cost:0})}
+function saveBudget(pid,ym,b){
+  lsSet(budgetKey(pid,ym),b);
+  if(S.uid)fsWrite(db.collection('properties/'+pid+'/monthMeta').doc(ym),{budgetRev:b.rev,budgetCost:b.cost},true);
+}
+
+/* ═══ FORECAST — linear extrapolation to month end from days-with-data-so-far ═══ */
+function forecastMonth(M){
+  var n=M.days.length;
+  var filled=M.days.filter(function(x){return x.hasData});
+  var fc=filled.length;
+  if(fc===0)return null;
+  var lastFilledDay=filled[filled.length-1].day;
+  // guard: only forecast if we're not already at/near month end
+  var avgRevDay=M.totals.revTotal/fc, avgCostDay=M.totals.costTotal/fc;
+  var remainingDays=n-fc;
+  var projRev=M.totals.revTotal+avgRevDay*remainingDays;
+  var projCost=M.totals.costTotal+avgCostDay*remainingDays;
+  return {
+    filledDays:fc,remainingDays:remainingDays,lastFilledDay:lastFilledDay,
+    projRev:projRev,projCost:projCost,projFbPct:safeDiv(projCost,projRev)*100
+  };
+}
+
+/* ═══ WEEKDAY ANALYSIS — aggregates across ALL months with data for a property ═══ */
+var WD_NAMES=['Ndz','Pon','Wt','Śr','Czw','Pt','Sob'];
+function weekdayAnalysis(pid){
+  var months=getAllMonthsWithData(pid);
+  var agg=[0,1,2,3,4,5,6].map(function(){return {rev:0,cost:0,guests:0,n:0}});
+  months.forEach(function(ym){
+    var M=calcMonth(pid,ym);
+    M.days.forEach(function(x){
+      if(!x.hasData)return;
+      var dt=new Date(+ym.split('-')[0],+ym.split('-')[1]-1,x.day);
+      var wd=dt.getDay();
+      agg[wd].rev+=x.t.revDay;agg[wd].cost+=x.t.costTotalDay;
+      agg[wd].guests+=x.b.sum+x.d.sum;agg[wd].n++;
+    });
+  });
+  return agg.map(function(a,i){
+    return {wd:i,name:WD_NAMES[i],avgRev:safeDiv(a.rev,a.n),avgCost:safeDiv(a.cost,a.n),
+      avgFb:safeDiv(a.cost,a.rev)*100,avgGuests:safeDiv(a.guests,a.n),n:a.n};
+  });
+}
+
+/* ═══ OUTLIER DETECTION — days whose F&B% deviates from month avg by threshold ═══ */
+function detectOutliers(M){
+  var withData=M.days.filter(function(x){return x.hasData && x.t.revDay>0});
+  if(withData.length<3)return {};
+  var vals=withData.map(function(x){return safeDiv(x.t.costTotalDay,x.t.revDay)*100});
+  var mean=vals.reduce(function(a,b){return a+b},0)/vals.length;
+  var variance=vals.reduce(function(a,b){return a+(b-mean)*(b-mean)},0)/vals.length;
+  var sd=Math.sqrt(variance);
+  var out={};
+  withData.forEach(function(x){
+    var v=safeDiv(x.t.costTotalDay,x.t.revDay)*100;
+    if(sd>0 && Math.abs(v-mean)>1.5*sd)out[x.day]=v>mean?'high':'low';
+  });
+  return out;
+}
+
+/* ═══ RANKING — best/worst days by profitability proxy (revenue - cost, i.e. margin) ═══ */
+function rankDays(M,topN){
+  var withData=M.days.filter(function(x){return x.hasData && x.t.revDay>0});
+  var sorted=withData.slice().sort(function(a,b){return (b.t.revDay-b.t.costTotalDay)-(a.t.revDay-a.t.costTotalDay)});
+  return {best:sorted.slice(0,topN),worst:sorted.slice(-topN).reverse()};
+}
+
+/* ═══ GUEST SEGMENTS — adults/children/extra share across breakfast+dinner ═══ */
+function guestSegments(M){
+  var ad=0,ch=0,ex=0;
+  M.days.forEach(function(x){ad+=x.b.ad+x.d.ad;ch+=x.b.ch+x.d.ch;ex+=x.b.ex+x.d.ex;});
+  return {ad:ad,ch:ch,ex:ex,total:ad+ch+ex};
+}
+
+/* ═══ MULTI-YEAR SAME-MONTH TREND ═══ */
+function multiYearForMonth(pid,mm){
+  var months=getAllMonthsWithData(pid).filter(function(ym){return ym.slice(5,7)===mm});
+  return months.map(function(ym){
+    var T=calcMonth(pid,ym).totals;
+    return {ym:ym,year:ym.slice(0,4),revTotal:T.revTotal,costTotal:T.costTotal,fbCostPct:T.fbCostPct,mealsTotal:T.mealsTotal};
+  });
+}
+
+/* ═══ ALL-PROPERTIES AGGREGATE ═══ */
+function calcAllProps(ym){
+  var acc={bGuests:0,dGuests:0,mealsTotal:0,bCost:0,bRev:0,dCost:0,dRev:0,cukSum:0,costTotal:0,revTotal:0,laborMonthly:0,totalProfitPLN:0};
+  S.props.forEach(function(p){
+    var T=calcMonth(p.id,ym).totals;
+    acc.bGuests+=T.bGuests;acc.dGuests+=T.dGuests;acc.mealsTotal+=T.mealsTotal;
+    acc.bCost+=T.bCost;acc.bRev+=T.bRev;acc.dCost+=T.dCost;acc.dRev+=T.dRev;
+    acc.cukSum+=T.cukSum;acc.costTotal+=T.costTotal;acc.revTotal+=T.revTotal;
+    acc.laborMonthly+=T.laborMonthly;acc.totalProfitPLN+=T.totalProfitPLN;
+  });
+  acc.fbCostPct=safeDiv(acc.costTotal,acc.revTotal)*100;
+  acc.avgRevPerMeal=safeDiv(acc.revTotal,acc.mealsTotal);
+  acc.avgCostPerMeal=safeDiv(acc.costTotal,acc.mealsTotal);
+  acc.avgServicePerMeal=safeDiv(acc.laborMonthly,acc.mealsTotal);
+  acc.foodLaborPerMeal=acc.avgCostPerMeal+acc.avgServicePerMeal;
+  acc.incomePerMeal=acc.avgRevPerMeal-acc.foodLaborPerMeal;
+  acc.profitPct=safeDiv(acc.incomePerMeal,acc.avgRevPerMeal)*100;
+  return {pid:'__ALL__',ym:ym,totals:acc,days:[]};
+}
+
+/* ═══ THEMES ═══ */
+var THEMES=[
+  {id:'aurora',name:'Aurora',kind:'Ciemny',bg:'#0d0b1f',g:'linear-gradient(135deg,#7c6cf0,#c866ea,#ff6fa5)'},
+  {id:'neon',name:'Neon',kind:'Ciemny',bg:'#080a14',g:'linear-gradient(135deg,#00d9ff,#5b6cff,#ff2fb0)'},
+  {id:'daylight',name:'Daylight',kind:'Jasny',bg:'#f5f4fb',g:'linear-gradient(135deg,#6d5ef2,#a855d6,#e0518c)'},
+  {id:'arctic',name:'Arctic',kind:'Jasny',bg:'#f2f6fa',g:'linear-gradient(135deg,#2f6fed,#0eaab8,#0891b2)'},
+  {id:'auto',name:'Systemowy',kind:'Auto',bg:'#333',g:'linear-gradient(90deg,#0d0b1f 50%,#f5f4fb 50%)'}
+];
+function currentTheme(){return lsGet('theme','aurora')}
+function systemPrefersDark(){
+  try{return window.matchMedia('(prefers-color-scheme: dark)').matches}catch(e){return true}
+}
+function applyTheme(prefId){
+  var actual=prefId==='auto'?(systemPrefersDark()?'aurora':'daylight'):prefId;
+  document.documentElement.setAttribute('data-theme',actual);
+  var meta=document.getElementById('meta-theme');
+  if(meta){var t=THEMES.find(function(x){return x.id===actual});if(t)meta.setAttribute('content',t.bg)}
+}
+function setTheme(id){
+  lsSet('theme',id);
+  applyTheme(id);
+  renderShell();renderView();
+}
+try{
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){
+    if(currentTheme()==='auto'){applyTheme('auto');renderShell();renderView();}
+  });
+}catch(e){}
+
+
+/* ═══════════════════════════════════════════════════════
+   APP STATE
+═══════════════════════════════════════════════════════ */
+var S={
+  view:lsGet('lastView','dashboard'),
+  pid:lsGet('lastPid',null),
+  ym:lsGet('lastYm',todayYM()),
+  day:1,
+  props:[],
+  charts:{},
+  uid:null,userEmail:null,userEmailLower:null,currentRole:null
+};
+
+function toast(msg,type){
+  var el=document.getElementById('toast');
+  el.textContent=msg;el.className=type||'';
+  requestAnimationFrame(function(){el.classList.add('on')});
+  clearTimeout(window._toastT);
+  window._toastT=setTimeout(function(){el.classList.remove('on')},2400);
+}
+function haptic(ms){if(navigator.vibrate)navigator.vibrate(ms||10)}
+function requireEdit(){
+  if(FB_CONFIGURED&&S.uid&&!canEdit()){
+    toast('Nie masz uprawnień do edycji tego obiektu (rola: podgląd)','err');
+    return false;
+  }
+  return true;
+}
+
+function refreshProps(){
+  S.props=getProps();
+  if(!S.pid||!S.props.find(function(p){return p.id===S.pid})){
+    S.pid=S.props.length?S.props[0].id:null;
+  }
+  lsSet('lastPid',S.pid);
+}
+function currentProp(){return S.props.find(function(p){return p.id===S.pid})}
+
+function setYM(ym){S.ym=ym;lsSet('lastYm',ym);refreshTopbarSub();renderView()}
+function onMonthYearChange(){
+  var mo=document.getElementById('sel-month').value,yr=document.getElementById('sel-year').value;
+  setYM(yr+'-'+mo);
+}
+function refreshTopbarSub(){
+  var el=document.querySelector('.page-sub');
+  if(el)el.textContent=currentProp()? currentProp().name+' · '+mLabelFull(S.ym) : 'Wybierz obiekt';
+}
+function setPid(pid){S.pid=pid;lsSet('lastPid',pid);refreshTopbarSub();renderView()}
+function go(view){
+  if(view!==S.view)haptic(8);
+  S.view=view;lsSet('lastView',view);
+  closeSidebar();
+  renderShell();
+  renderView();
+}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('on')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('on')}
+
+/* ═══ ICONS (inline SVG, stroke=currentColor) ═══ */
+var ICONS={
+  dash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
+  entry:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-3-3L4 16.5"/></svg>',
+  compare:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v18"/><path d="M16 3v18"/><path d="M3 8h5"/><path d="M16 8h5"/><path d="M3 16h5"/><path d="M16 16h5"/></svg>',
+  props:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M10 21v-6h4v6"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.42.7.7 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
+  empty:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>'
+};
+var NAV=[
+  {v:'dashboard',l:'Pulpit',i:'dash'},
+  {v:'entry',l:'Wprowadzanie danych',i:'entry'},
+  {v:'analysis',l:'Analiza miesięczna',i:'chart'},
+  {v:'compare',l:'Porównania',i:'compare'},
+  {v:'properties',l:'Obiekty',i:'props'},
+  {v:'settings',l:'Ustawienia',i:'settings'}
+];
+
+function renderShell(){
+  // Sidebar
+  var yr=S.ym.split('-')[0],mo=S.ym.split('-')[1];
+  var propOpts=S.props.map(function(p){return '<option value="'+p.id+'"'+(p.id===S.pid?' selected':'')+'>'+esc(p.name)+'</option>'}).join('');
+  var moOpts=MONTHS_FULL.map(function(m,i){var v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===mo?' selected':'')+'>'+m+'</option>'}).join('');
+  var yrOpts='';for(var y=2023;y<=2030;y++){yrOpts+='<option value="'+y+'"'+(String(y)===yr?' selected':'')+'>'+y+'</option>'}
+  var roleLabels={admin:'👑 Administrator',manager:'👤 Manager',viewer:'👁 Podgląd'};
+
+  document.getElementById('sidebar').innerHTML=
+    '<div class="s-logo"><h1>BufetCost</h1><span>F&amp;B P&amp;L Analytics</span></div>'+
+    (S.pid&&S.currentRole?'<div class="role-badge '+S.currentRole+'">'+(roleLabels[S.currentRole]||S.currentRole)+'</div>':'')+
+    '<div class="s-sel"><label>Obiekt</label>'+
+      (S.props.length? '<select class="s-input" onchange="setPid(this.value)">'+propOpts+'</select>' : '<div style="font-size:.72rem;color:var(--tx3)">Brak obiektów — dodaj w zakładce Obiekty</div>')+
+    '</div>'+
+    '<div class="s-sel"><div class="frow2">'+
+      '<div><label>Miesiąc</label><select class="s-input" id="sel-month" onchange="onMonthYearChange()">'+moOpts+'</select></div>'+
+      '<div><label>Rok</label><select class="s-input" id="sel-year" onchange="onMonthYearChange()">'+yrOpts+'</select></div>'+
+    '</div></div>'+
+    '<div class="s-sect">Nawigacja</div>'+
+    NAV.map(function(n){return '<div class="nav-i'+(S.view===n.v?' active':'')+'" onclick="go(\''+n.v+'\')">'+ICONS[n.i]+'<span>'+n.l+'</span></div>'}).join('')+
+    '<div class="s-bottom" id="install-slot">'+
+      (FB_CONFIGURED&&S.uid?
+        '<div id="conn-status" class="conn-dot"><i></i></div>'+
+        '<div class="s-foot-note" style="margin:6px 0 10px;text-align:left">'+esc(S.userEmail||'')+'</div>'+
+        '<button class="btn sm block" onclick="authLogout()" style="margin-bottom:8px">⏻ Wyloguj</button>'
+        :
+        '<div class="s-foot-note">'+(FB_CONFIGURED?'Dane synchronizowane z chmurą.':'Dane zapisywane lokalnie na urządzeniu.<br>Skonfiguruj Firebase, aby włączyć logowanie i chmurę.')+'</div>'
+      )+
+    '</div>';
+  updateConnStatusUI();
+
+  // Bottom nav (mobile) — 5 slots max, fold Ustawienia into Obiekty long-press? keep 5 primary
+  var bnavItems=[NAV[0],NAV[1],NAV[2],NAV[3],NAV[5]];
+  document.getElementById('bottom-nav').innerHTML=bnavItems.map(function(n){
+    return '<button class="bnav-item'+(S.view===n.v?' active':'')+'" onclick="go(\''+n.v+'\')">'+ICONS[n.i]+'<span>'+n.l.split(' ')[0]+'</span></button>';
+  }).join('');
+
+  // Topbar
+  var titles={dashboard:'Pulpit',entry:'Wprowadzanie danych',analysis:'Analiza miesięczna',compare:'Porównania',properties:'Obiekty',settings:'Ustawienia'};
+  var sub=currentProp()? esc(currentProp().name)+' · '+mLabelFull(S.ym) : 'Wybierz obiekt';
+  document.getElementById('topbar').innerHTML=
+    '<button id="hamburger" onclick="openSidebar()">'+ICONS.menu+'</button>'+
+    '<div><div class="page-title">'+titles[S.view]+'</div><div class="page-sub">'+sub+'</div></div>';
+}
+function updateConnStatusUI(){if(window._connStatus)setConnStatus(window._connStatus)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+/* ═══════════════════════════════════════════════════════
+   BOOTSTRAP
+═══════════════════════════════════════════════════════ */
+function lsKeysAfter(prefix){return lsKeys(prefix).map(function(k){return k.slice(prefix.length)})}
+
+function bootLocal(){
+  refreshProps();
+  if(!S.props.length){
+    // seed with a first property named after the source workbook, empty of data
+    var id=addProperty('Shellter');
+    S.pid=id;lsSet('lastPid',id);
+    S.props=getProps();
+  }
+  handleShortcutParams();
+  renderShell();
+  renderView();
+}
+function handleShortcutParams(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    var action=params.get('action');
+    if(action==='entry'){S.view='entry';lsSet('lastView','entry');S.ym=todayYM();S.day=(new Date()).getDate();}
+    else if(action==='dashboard'){S.view='dashboard';lsSet('lastView','dashboard');}
+    if(action){
+      var url=new URL(window.location.href);url.searchParams.delete('action');
+      window.history.replaceState({},'',url.pathname+url.search+url.hash);
+    }
+  }catch(e){}
+}
+
+/* ═══════════════════════════════════════════════════════
+   MIGRACJA — jednorazowo wypycha istniejące dane lokalne (sprzed
+   logowania) do Firestore pod kontem nowo zalogowanego użytkownika.
+═══════════════════════════════════════════════════════ */
+function migrateLocalDataToCloud(){
+  if(localStorage.getItem(LS_PREFIX+'migrated-v1'))return Promise.resolve();
+  var localProps=getProps().filter(function(p){return !p.ownerEmail});
+  if(!localProps.length){localStorage.setItem(LS_PREFIX+'migrated-v1','1');return Promise.resolve();}
+  var tasks=localProps.map(function(p){
+    p.ownerEmail=S.userEmailLower;
+    p.memberEmails=[S.userEmailLower];
+    p.members=[{email:S.userEmailLower,role:'admin'}];
+    if(typeof p.targetFb!=='number')p.targetFb=lsGet('target-'+p.id,30);
+    updatePropertyLocal(p);
+    var subTasks=[];
+    lsKeysAfter('day-'+p.id+'-').forEach(function(rest){
+      var rec=lsGet('day-'+p.id+'-'+rest,null);
+      if(rec)subTasks.push(db.collection('properties/'+p.id+'/days').doc(rest).set(rec));
+    });
+    lsKeysAfter('meta-'+p.id+'-').forEach(function(ym){
+      var m=lsGet('meta-'+p.id+'-'+ym,null);
+      var budget=lsGet('budget-'+p.id+'-'+ym,null);
+      var merged=Object.assign({},m||{},budget?{budgetRev:budget.rev,budgetCost:budget.cost}:{});
+      if(Object.keys(merged).length)subTasks.push(db.collection('properties/'+p.id+'/monthMeta').doc(ym).set(merged));
+    });
+    return db.collection('properties').doc(p.id).set(p).then(function(){return Promise.all(subTasks)});
+  });
+  return Promise.all(tasks).then(function(){localStorage.setItem(LS_PREFIX+'migrated-v1','1')})
+    .catch(function(e){console.warn('Migracja pominięta:',e.message)});
+}
+
+/* ═══════════════════════════════════════════════════════
+   ŁADOWANIE DANYCH Z FIRESTORE — wszystkie obiekty, w których
+   mój email jest na liście memberEmails, plus ich dane dzienne.
+═══════════════════════════════════════════════════════ */
+function loadUserDataFromFirestore(){
+  return db.collection('properties').where('memberEmails','array-contains',S.userEmailLower).get().then(function(snap){
+    var props=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});
+    saveProps(props);
+    var tasks=props.map(function(p){
+      var t1=db.collection('properties/'+p.id+'/days').get().then(function(s){
+        s.docs.forEach(function(d){lsSet('day-'+p.id+'-'+d.id,d.data())});
+      });
+      var t2=db.collection('properties/'+p.id+'/monthMeta').get().then(function(s){
+        s.docs.forEach(function(d){
+          var data=d.data();
+          lsSet('meta-'+p.id+'-'+d.id,{labor:data.labor||0});
+          if(typeof data.budgetRev!=='undefined'||typeof data.budgetCost!=='undefined'){
+            lsSet('budget-'+p.id+'-'+d.id,{rev:data.budgetRev||0,cost:data.budgetCost||0});
+          }
+        });
+      });
+      return Promise.all([t1,t2]);
+    });
+    return Promise.all(tasks);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   AUTH — logowanie / rejestracja / reset hasła / wylogowanie
+═══════════════════════════════════════════════════════ */
+function switchAuthTab(tab){
+  document.getElementById('form-login').style.display=tab==='login'?'':'none';
+  document.getElementById('form-reg').style.display=tab==='reg'?'':'none';
+  document.getElementById('tab-login').classList.toggle('on',tab==='login');
+  document.getElementById('tab-reg').classList.toggle('on',tab==='reg');
+  clearAuthMsg();
+}
+function showAuthErr(msg){
+  var e=document.getElementById('auth-err');if(e){e.textContent=msg;e.classList.add('show');}
+  document.getElementById('auth-ok').classList.remove('show');
+  document.getElementById('auth-loading').classList.remove('show');
+}
+function showAuthOk(msg){
+  var e=document.getElementById('auth-ok');if(e){e.textContent=msg;e.classList.add('show');}
+  document.getElementById('auth-err').classList.remove('show');
+  document.getElementById('auth-loading').classList.remove('show');
+}
+function showAuthLoading(msg){
+  document.getElementById('auth-err').classList.remove('show');
+  document.getElementById('auth-ok').classList.remove('show');
+  var e=document.getElementById('auth-loading');if(e){e.textContent=msg||'⏳ Łączenie...';e.classList.add('show');}
+}
+function clearAuthMsg(){
+  ['auth-err','auth-ok','auth-loading'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('show')});
+}
+function fbErrMsg(code){
+  var map={
+    'auth/invalid-email':'Nieprawidłowy adres email.',
+    'auth/user-not-found':'Nie znaleziono konta z tym emailem.',
+    'auth/wrong-password':'Nieprawidłowe hasło.',
+    'auth/email-already-in-use':'Konto z tym emailem już istnieje.',
+    'auth/weak-password':'Hasło musi mieć co najmniej 6 znaków.',
+    'auth/too-many-requests':'Zbyt wiele prób. Spróbuj później.',
+    'auth/network-request-failed':'Brak połączenia z internetem.',
+    'auth/invalid-credential':'Nieprawidłowy email lub hasło.'
+  };
+  return map[code]||('Błąd: '+code);
+}
+function isSecureOrigin(){
+  try{return /^https?:$/.test(location.protocol)||location.hostname==='localhost'}catch(e){return false}
+}
+function authTimeoutRace(promise,label){
+  var timedOut=false;
+  var timer=setTimeout(function(){
+    timedOut=true;
+    showAuthErr('⏱️ '+label+' trwa zbyt długo. Najczęstsza przyczyna: aplikacja jest otwarta jako lokalny plik, a nie przez adres https:// / z hostingu. Wystaw ją np. przez Firebase Hosting i spróbuj ponownie.');
+  },10000);
+  return promise.then(function(r){if(!timedOut)clearTimeout(timer);return r}).catch(function(e){
+    clearTimeout(timer);
+    if(!timedOut)throw e;
+  });
+}
+function authLogin(){
+  var email=(document.getElementById('l-email').value||'').trim();
+  var pass=document.getElementById('l-pass').value||'';
+  if(!email||!pass){showAuthErr('Podaj email i hasło.');return}
+  showAuthLoading('⏳ Logowanie...');
+  authTimeoutRace(auth.signInWithEmailAndPassword(email,pass),'Logowanie').catch(function(e){if(e&&e.code)showAuthErr(fbErrMsg(e.code))});
+}
+function authRegister(){
+  var email=(document.getElementById('r-email').value||'').trim();
+  var pass=document.getElementById('r-pass').value||'';
+  var pass2=document.getElementById('r-pass2').value||'';
+  if(!email||!pass){showAuthErr('Podaj email i hasło.');return}
+  if(pass!==pass2){showAuthErr('Hasła nie są identyczne.');return}
+  showAuthLoading('⏳ Tworzenie konta...');
+  authTimeoutRace(auth.createUserWithEmailAndPassword(email,pass),'Rejestracja').catch(function(e){if(e&&e.code)showAuthErr(fbErrMsg(e.code))});
+}
+function authReset(){
+  var email=(document.getElementById('l-email').value||'').trim();
+  if(!email){showAuthErr('Podaj email, na który wysłać link resetujący.');return}
+  auth.sendPasswordResetEmail(email).then(function(){
+    showAuthOk('Wysłano link do resetu hasła na '+email);
+  }).catch(function(e){showAuthErr(fbErrMsg(e.code))});
+}
+function authLogout(){
+  closeSidebar();
+  auth.signOut();
+}
+function showLogin(){
+  S.uid=null;S.userEmail=null;S.userEmailLower=null;S.currentRole=null;S.pid=null;S.props=[];
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-loading').classList.remove('show');
+  clearAuthMsg();
+}
+function showApp(user){
+  S.uid=user.uid;S.userEmail=user.email;S.userEmailLower=(user.email||'').toLowerCase();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').style.display='';
+  setConnStatus(navigator.onLine?'online':'offline');
+  migrateLocalDataToCloud().then(function(){
+    return loadUserDataFromFirestore();
+  }).then(function(){
+    finishStartup();
+  }).catch(function(e){
+    console.warn('Firestore load error:',e);
+    setConnStatus('offline');
+    finishStartup();
+  });
+}
+function finishStartup(){
+  refreshProps();
+  refreshCurrentRole();
+  handleShortcutParams();
+  renderShell();
+  renderView();
+}
+
+function initApp(){
+  setupPWA();
+  applyTheme(currentTheme());
+  if(!FB_CONFIGURED){
+    // Firebase not set up yet — app stays fully usable offline/local-only.
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').style.display='';
+    bootLocal();
+    return;
+  }
+  if(!isSecureOrigin()){
+    var box=document.querySelector('.auth-box');
+    if(box)box.insertAdjacentHTML('afterbegin',
+      '<div class="auth-msg show" style="display:block;background:rgba(246,185,59,.14);color:var(--amber);border:1px solid rgba(246,185,59,.35);margin-bottom:16px">'+
+      '⚠️ Ta aplikacja jest otwarta jako lokalny plik ('+esc(location.protocol)+'), a logowanie wymaga adresu https://. Wystaw plik przez hosting (np. Firebase Hosting), inaczej logowanie nie zadziała.</div>');
+  }
+  document.getElementById('app').style.display='none';
+  auth.onAuthStateChanged(function(user){
+    if(user)showApp(user);else showLogin();
+  });
+}
+document.addEventListener('DOMContentLoaded',initApp);
+
+
+function renderView(){
+  var root=document.getElementById('view-root');
+  if(S.view==='dashboard')root.innerHTML=viewDashboard();
+  else if(S.view==='entry')root.innerHTML=viewEntry();
+  else if(S.view==='analysis')root.innerHTML=viewAnalysis();
+  else if(S.view==='compare')root.innerHTML=viewCompare();
+  else if(S.view==='properties')root.innerHTML=viewProperties();
+  else if(S.view==='settings')root.innerHTML=viewSettings();
+  var spacer=document.createElement('div');
+  spacer.className='view-end-spacer';
+  root.appendChild(spacer);
+  updateSaveBar();
+  // Defer chart creation to the next painted frame so the new tab's
+  // text/tables appear immediately instead of the old tab lingering
+  // while Chart.js does its (synchronous, sometimes slow) work.
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      afterRenderHook();
+    });
+  });
+}
+function updateSaveBar(){
+  var bar=document.getElementById('entry-savebar');
+  var showBar=S.view==='entry'&&!!S.pid&&_entryMode==='day';
+  document.body.classList.toggle('entry-active',showBar);
+  if(showBar){
+    bar.classList.add('on');
+    bar.innerHTML='<button class="btn primary" onclick="saveEntryDay()">💾 Zapisz dzień '+S.day+'</button>';
+  }else{
+    bar.classList.remove('on');
+    bar.innerHTML='';
+  }
+}
+function afterRenderHook(){
+  if(S.view==='dashboard')afterDashboard();
+  if(S.view==='entry')afterEntry();
+  if(S.view==='analysis')afterAnalysis();
+  if(S.view==='compare')afterCompare();
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: DATA ENTRY (day-by-day)
+═══════════════════════════════════════════════════════ */
+var _entryMode=lsGet('entryMode','day');
+function viewEntry(){
+  if(!S.pid)return emptyState('Brak obiektów','Dodaj obiekt, aby wprowadzać dane.','properties','Dodaj obiekt');
+  var n=dim(S.ym);
+  if(S.day>n)S.day=1;
+
+  var filledCount=0;for(var i=1;i<=n;i++)if(hasDay(S.pid,S.ym,i))filledCount++;
+  var pct=Math.round(filledCount/n*100);
+
+  var h='';
+  // Month switcher (local to this view, so you don't need the sidebar)
+  var pym=S.ym.split('-'),eyr=pym[0],emo=pym[1];
+  var moOpts=MONTHS_FULL.map(function(m,i){var v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===emo?' selected':'')+'>'+m+'</option>'}).join('');
+  var yrOpts='';for(var yy=2023;yy<=2030;yy++){yrOpts+='<option value="'+yy+'"'+(String(yy)===eyr?' selected':'')+'>'+yy+'</option>'}
+  h+='<div class="card" style="margin-bottom:16px">';
+  h+='<div class="stitle" style="margin-top:0">Miesiąc</div>';
+  h+='<div class="btn-row" style="align-items:center;margin-bottom:12px">'+
+     '<button class="icon-btn" onclick="entryShiftMonth(-1)" title="Poprzedni miesiąc">◂</button>'+
+     '<div style="flex:1;display:grid;grid-template-columns:2fr 1fr;gap:8px">'+
+       '<select class="s-input" id="entry-sel-month" onchange="entryOnMonthYearChange()">'+moOpts+'</select>'+
+       '<select class="s-input" id="entry-sel-year" onchange="entryOnMonthYearChange()">'+yrOpts+'</select>'+
+     '</div>'+
+     '<button class="icon-btn" onclick="entryShiftMonth(1)" title="Następny miesiąc">▸</button>'+
+     '</div>';
+  h+='<div class="progress-row"><div class="progress"><i style="width:'+pct+'%"></i></div><span class="progress-lbl">'+filledCount+'/'+n+' dni ('+pct+'%)</span></div>';
+  h+='<div class="btn-row" style="margin-top:10px"><button class="btn sm" onclick="openDuplicateMonthModal()">📋 Duplikuj miesiąc jako szablon</button></div>';
+  h+='</div>';
+
+  // Mode toggle: day-by-day vs table
+  h+='<div class="pill-select" style="margin-bottom:16px">'+
+     '<button class="'+(_entryMode==='day'?'on':'')+'" onclick="setEntryMode(\'day\')">Dzień po dniu</button>'+
+     '<button class="'+(_entryMode==='table'?'on':'')+'" onclick="setEntryMode(\'table\')">Tabela (cały miesiąc)</button>'+
+     '</div>';
+
+  if(_entryMode==='table')return h+viewEntryTable(n);
+  return h+viewEntryDay(n);
+}
+function setEntryMode(m){_entryMode=m;lsSet('entryMode',m);renderView()}
+
+function viewEntryDay(n){
+  var rec=getDay(S.pid,S.ym,S.day)||emptyDay();
+  var h='';
+  // Day picker grid
+  h+='<div class="card" style="margin-bottom:16px">';
+  h+='<div class="stitle" style="margin-top:0">Wybierz dzień <small>'+mLabelFull(S.ym)+'</small></div>';
+  h+='<div class="day-grid">';
+  for(var d=1;d<=n;d++){
+    var filled=hasDay(S.pid,S.ym,d);
+    h+='<div class="day-cell'+(filled?' filled':'')+(d===S.day?' active':'')+'" onclick="entrySetDay('+d+')">'+d+'</div>';
+  }
+  h+='</div>';
+  h+='<div class="btn-row"><button class="btn sm" onclick="entryShiftDay(-1)">◂ Poprzedni dzień</button><button class="btn sm" onclick="entryShiftDay(1)">Następny dzień ▸</button><button class="btn sm" onclick="copyFromPreviousDay()">📑 Kopiuj z poprzedniego dnia</button></div>';
+  h+='</div>';
+
+  // Breakfast section
+  h+=entrySection('b','Śniadania','sec-b',rec.b,[
+    ['ad','Dorośli (ilość)'],['ch','Dzieci (ilość)'],['ex','Sprzedaż dodatkowa (ilość)'],
+    ['cost','Koszt śniadania (zł)'],['rev','Przychód ze śniadania (zł)'],['revEx','Przychód dodatkowy — sprzedaż dod. (zł)']
+  ]);
+  // Dinner section
+  h+=entrySection('d','Kolacje','sec-d',rec.d,[
+    ['ad','Dorośli (ilość)'],['ch','Dzieci (ilość)'],['ex','Sprzedaż dodatkowa (ilość)'],
+    ['cost','Koszt kolacji (zł)'],['rev','Przychód z kolacji (zł)'],['revEx','Przychód dodatkowy — sprzedaż dod. + M&E (zł)']
+  ]);
+
+  // Combined section (auto + cukiernia manual input)
+  var bSum=(rec.b.ad||0)+(rec.b.ch||0)+(rec.b.ex||0),bRevT=(rec.b.rev||0)+(rec.b.revEx||0);
+  var dSum=(rec.d.ad||0)+(rec.d.ch||0)+(rec.d.ex||0),dRevT=(rec.d.rev||0)+(rec.d.revEx||0);
+  var costComb=(rec.b.cost||0)+(rec.d.cost||0);
+  var costTotal=costComb+(rec.cuk||0);
+  var revTotal=bRevT+dRevT;
+  var fbDay=safeDiv(costTotal,revTotal)*100;
+
+  h+='<div class="card sec-t" style="margin-bottom:16px">';
+  h+='<div class="stitle" style="margin-top:0">Śniadania + Kolacje <small>uzupełnia się automatycznie</small></div>';
+  h+='<div class="field" style="max-width:260px"><label>Magazyn cukiernia — koszt dzienny (zł)</label>'+
+     '<input type="number" step="0.01" inputmode="decimal" id="ent-cuk" value="'+(rec.cuk||'')+'" placeholder="0.00"></div>';
+  h+='<div class="ccards">'+
+     ccard('Goście łącznie',bSum+dSum)+
+     ccard('Koszt łącznie',fmt2(costTotal)+' zł')+
+     ccard('Przychód łącznie',fmt2(revTotal)+' zł')+
+     ccard('F&B Cost dzień',fmtPct(fbDay))+
+     '</div>';
+  h+='</div>';
+  return h;
+}
+
+/* ═══ TABLE MODE: whole month, editable grid ═══ */
+function viewEntryTable(n){
+  var h='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Śniadania <small>edytuj i zapisz cały miesiąc naraz</small></div>'+entryTableGrid(n,'b')+'</div>';
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Kolacje</div>'+entryTableGrid(n,'d')+'</div>';
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Magazyn cukiernia</div>'+entryTableCukGrid(n)+'</div>';
+  h+='<div class="btn-row"><button class="btn primary block" onclick="saveEntryTable('+n+')">💾 Zapisz cały miesiąc</button></div>';
+  return h;
+}
+function entryTableGrid(n,prefix){
+  var cols=prefix==='b'?
+    [['ad','Dor.'],['ch','Dzie.'],['ex','Dod.'],['cost','Koszt'],['rev','Przych.'],['revEx','Przych.dod']]:
+    [['ad','Dor.'],['ch','Dzie.'],['ex','Dod.'],['cost','Koszt'],['rev','Przych.'],['revEx','Przych.dod/M&E']];
+  var h='<div class="tbl-wrap"><table><thead><tr><th>Dzień</th>'+cols.map(function(c){return '<th>'+c[1]+'</th>'}).join('')+'</tr></thead><tbody>';
+  for(var d=1;d<=n;d++){
+    var rec=getDay(S.pid,S.ym,d)||emptyDay();
+    var data=rec[prefix];
+    h+='<tr><td>'+d+'</td>'+cols.map(function(c){
+      var isMoney=(c[0]==='cost'||c[0]==='rev'||c[0]==='revEx');
+      return '<td><input type="number" '+(isMoney?'step="0.01"':'step="1"')+' style="width:66px" id="tbl-'+prefix+'-'+c[0]+'-'+d+'" value="'+((data&&data[c[0]])||'')+'"></td>';
+    }).join('')+'</tr>';
+  }
+  h+='</tbody></table></div>';
+  return h;
+}
+function entryTableCukGrid(n){
+  var h='<div class="tbl-wrap"><table><thead><tr><th>Dzień</th><th>Magazyn cukiernia (zł)</th></tr></thead><tbody>';
+  for(var d=1;d<=n;d++){
+    var rec=getDay(S.pid,S.ym,d)||emptyDay();
+    h+='<tr><td>'+d+'</td><td><input type="number" step="0.01" style="width:100px" id="tbl-cuk-'+d+'" value="'+(rec.cuk||'')+'"></td></tr>';
+  }
+  h+='</tbody></table></div>';
+  return h;
+}
+function saveEntryTable(n){
+  if(!requireEdit())return;
+  for(var d=1;d<=n;d++){
+    var rec={
+      b:{ad:readNum('tbl-b-ad-'+d),ch:readNum('tbl-b-ch-'+d),ex:readNum('tbl-b-ex-'+d),cost:readNum('tbl-b-cost-'+d),rev:readNum('tbl-b-rev-'+d),revEx:readNum('tbl-b-revEx-'+d)},
+      d:{ad:readNum('tbl-d-ad-'+d),ch:readNum('tbl-d-ch-'+d),ex:readNum('tbl-d-ex-'+d),cost:readNum('tbl-d-cost-'+d),rev:readNum('tbl-d-rev-'+d),revEx:readNum('tbl-d-revEx-'+d)},
+      cuk:readNum('tbl-cuk-'+d)
+    };
+    var isEmpty=Object.values(rec.b).every(function(v){return !v})&&Object.values(rec.d).every(function(v){return !v})&&!rec.cuk;
+    if(!isEmpty || hasDay(S.pid,S.ym,d)) saveDay(S.pid,S.ym,d,rec);
+  }
+  haptic(15);
+  toast('Zapisano cały miesiąc ('+mLabel(S.ym)+')','ok');
+  renderView();
+}
+
+/* ═══ COPY FROM PREVIOUS DAY ═══ */
+function copyFromPreviousDay(){
+  var srcPid=S.pid,srcYm=S.ym,srcDay=S.day-1;
+  if(srcDay<1){srcYm=prevM(S.ym);srcDay=dim(srcYm);}
+  var src=getDay(srcPid,srcYm,srcDay);
+  if(!src){toast('Brak danych z poprzedniego dnia','err');return}
+  ['ad','ch','ex','cost','rev','revEx'].forEach(function(k){
+    var elB=document.getElementById('ent-b-'+k);if(elB)elB.value=src.b[k]||'';
+    var elD=document.getElementById('ent-d-'+k);if(elD)elD.value=src.d[k]||'';
+  });
+  var elC=document.getElementById('ent-cuk');if(elC)elC.value=src.cuk||'';
+  toast('Skopiowano wartości z dnia '+srcDay+' ('+mLabel(srcYm)+')','ok');
+}
+
+/* ═══ DUPLICATE MONTH AS TEMPLATE ═══ */
+function openDuplicateMonthModal(){
+  var moOpts=MONTHS_FULL.map(function(m,i){var v=String(i+1).padStart(2,'0');return '<option value="'+v+'">'+m+'</option>'}).join('');
+  var yrOpts='';for(var yy=2023;yy<=2030;yy++){yrOpts+='<option value="'+yy+'">'+yy+'</option>'}
+  showModal('Duplikuj '+mLabelFull(S.ym)+' do innego miesiąca',
+    '<p style="font-size:.82rem;color:var(--tx2);margin-bottom:12px">Skopiuje wszystkie dane dzienne oraz koszt obsługi z <b>'+mLabelFull(S.ym)+'</b> do wybranego miesiąca docelowego (nadpisując istniejące dane tam).</p>'+
+    '<div class="frow2"><div><label style="font-size:.72rem;color:var(--tx2)">Miesiąc docelowy</label><select class="s-input" id="dup-mo">'+moOpts+'</select></div>'+
+    '<div><label style="font-size:.72rem;color:var(--tx2)">Rok docelowy</label><select class="s-input" id="dup-yr">'+yrOpts+'</select></div></div>'+
+    '<div class="btn-row" style="margin-top:14px"><button class="btn primary block" onclick="doDuplicateMonth()">Duplikuj</button><button class="btn block" onclick="closeModal()">Anuluj</button></div>'
+  );
+}
+function doDuplicateMonth(){
+  if(!requireEdit()){closeModal();return}
+  var mo=document.getElementById('dup-mo').value,yr=document.getElementById('dup-yr').value;
+  var targetYm=yr+'-'+mo;
+  if(targetYm===S.ym){toast('Wybierz inny miesiąc niż bieżący','err');return}
+  var n=dim(S.ym);
+  for(var d=1;d<=n;d++){
+    var rec=getDay(S.pid,S.ym,d);
+    if(rec)saveDay(S.pid,targetYm,Math.min(d,dim(targetYm)),rec);
+  }
+  saveMeta(S.pid,targetYm,getMeta(S.pid,S.ym));
+  closeModal();
+  toast('Zduplikowano '+mLabel(S.ym)+' → '+mLabel(targetYm),'ok');
+  S.ym=targetYm;lsSet('lastYm',targetYm);
+  renderShell();renderView();
+}
+
+function ccard(l,v){return '<div class="ccard"><div class="ccard-l">'+l+'</div><div class="ccard-v">'+v+'</div></div>'}
+function entrySection(prefix,title,cls,data,fields){
+  var h='<div class="card '+cls+'" style="margin-bottom:16px">';
+  h+='<div class="stitle" style="margin-top:0">'+title+'</div>';
+  h+='<div class="frow">';
+  fields.forEach(function(f){
+    var key=f[0],label=f[1];
+    var isMoney=(key==='cost'||key==='rev'||key==='revEx');
+    h+='<div class="field"><label>'+label+'</label><input type="number" '+(isMoney?'step="0.01"':'step="1"')+' inputmode="decimal" id="ent-'+prefix+'-'+key+'" value="'+((data&&data[key])||'')+'" placeholder="0"></div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+function entrySetDay(d){S.day=d;renderView()}
+function entryShiftMonth(delta){
+  var newYm=delta<0?prevM(S.ym):nextM(S.ym);
+  S.ym=newYm;lsSet('lastYm',newYm);
+  S.day=1;
+  renderShell();
+  renderView();
+}
+function entryOnMonthYearChange(){
+  var mo=document.getElementById('entry-sel-month').value,yr=document.getElementById('entry-sel-year').value;
+  S.ym=yr+'-'+mo;lsSet('lastYm',S.ym);
+  S.day=1;
+  renderShell();
+  renderView();
+}
+function entryShiftDay(delta){
+  var n=dim(S.ym);
+  S.day=Math.max(1,Math.min(n,S.day+delta));
+  renderView();
+}
+function readNum(id){var el=document.getElementById(id);if(!el)return 0;var v=parseFloat(el.value);return isNaN(v)?0:v}
+
+/* ═══ UNDO LAST SAVE ═══ */
+var _lastAction=null;
+function saveEntryDay(){
+  if(!S.pid){toast('Wybierz obiekt','err');return}
+  if(!requireEdit())return;
+  var rec={
+    b:{ad:readNum('ent-b-ad'),ch:readNum('ent-b-ch'),ex:readNum('ent-b-ex'),cost:readNum('ent-b-cost'),rev:readNum('ent-b-rev'),revEx:readNum('ent-b-revEx')},
+    d:{ad:readNum('ent-d-ad'),ch:readNum('ent-d-ch'),ex:readNum('ent-d-ex'),cost:readNum('ent-d-cost'),rev:readNum('ent-d-rev'),revEx:readNum('ent-d-revEx')},
+    cuk:readNum('ent-cuk')
+  };
+  var bSum=rec.b.ad+rec.b.ch+rec.b.ex,dSum=rec.d.ad+rec.d.ch+rec.d.ex;
+  var revT=(rec.b.rev+rec.b.revEx)+(rec.d.rev+rec.d.revEx);
+  var costT=rec.b.cost+rec.d.cost+rec.cuk;
+  var fbPct=safeDiv(costT,revT)*100;
+  // Soft validation: warn on suspicious values before saving
+  var warnings=[];
+  if((bSum>0||dSum>0)&&revT===0)warnings.push('Wprowadzono gości, ale przychód wynosi 0 zł.');
+  if(revT>0&&isFinite(fbPct)&&fbPct>75)warnings.push('F&B Cost dnia jest bardzo wysoki ('+fbPct.toFixed(1)+'%) — sprawdź, czy koszty lub przychody nie zawierają literówki.');
+  if(revT>0&&isFinite(fbPct)&&fbPct<2&&costT>0)warnings.push('F&B Cost dnia jest bardzo niski ('+fbPct.toFixed(1)+'%) — sprawdź dane.');
+  if(warnings.length){
+    showModal('Dane wyglądają nietypowo',
+      '<p style="font-size:.82rem;color:var(--tx2);margin-bottom:12px">'+warnings.map(esc).join('<br>')+'</p>'+
+      '<div class="btn-row"><button class="btn primary block" onclick="forceSaveEntryDay()">Zapisz mimo to</button><button class="btn block" onclick="closeModal()">Wróć i popraw</button></div>'
+    );
+    window._pendingEntryRec=rec;
+    return;
+  }
+  commitSaveEntryDay(rec);
+}
+function forceSaveEntryDay(){
+  closeModal();
+  if(window._pendingEntryRec){commitSaveEntryDay(window._pendingEntryRec);window._pendingEntryRec=null}
+}
+function commitSaveEntryDay(rec){
+  var prev=getDay(S.pid,S.ym,S.day);
+  _lastAction={pid:S.pid,ym:S.ym,day:S.day,prevRec:prev};
+  saveDay(S.pid,S.ym,S.day,rec);
+  haptic(15);
+  toast('Zapisano dzień '+S.day+' ('+mLabel(S.ym)+') · ↩ cofnij w Ustawieniach','ok');
+  renderView();
+}
+function undoLastAction(){
+  if(!_lastAction){toast('Brak akcji do cofnięcia','err');return}
+  saveDay(_lastAction.pid,_lastAction.ym,_lastAction.day,_lastAction.prevRec||emptyDay());
+  if(!_lastAction.prevRec)lsDel(dayKey(_lastAction.pid,_lastAction.ym,_lastAction.day));
+  toast('Cofnięto ostatni zapis (dzień '+_lastAction.day+')','ok');
+  _lastAction=null;
+  renderView();
+}
+function afterEntry(){}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: ANALYSIS (monthly deep-dive, table + profitability)
+═══════════════════════════════════════════════════════ */
+var _atab=lsGet('atab','b');
+function viewAnalysis(){
+  if(!S.pid)return emptyState('Brak obiektów','Dodaj obiekt, aby zobaczyć analizę.','properties','Dodaj obiekt');
+  var M=calcMonth(S.pid,S.ym),T=M.totals;
+  var target=getTargetFB(S.pid);
+  var budget=getBudget(S.pid,S.ym);
+  var fc=forecastMonth(M);
+  var outliers=detectOutliers(M);
+  var rank=rankDays(M,5);
+  var seg=guestSegments(M);
+
+  var h='';
+  h+='<div class="ccards">'+
+    ccard('Śniadania total',T.bGuests)+
+    ccard('Kolacje total',T.dGuests)+
+    ccard('Posiłków bufetowych total',T.mealsTotal)+
+    ccard('Śr. przychód z posiłku',fmt2(T.avgRevPerMeal)+' zł')+
+    ccard('Śr. koszt posiłku (food)',fmt2(T.avgCostPerMeal)+' zł')+
+    '</div>';
+
+  // ── Target F&B% + status ──
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Cel F&amp;B Cost %</div>';
+  h+='<div class="frow2"><div class="field"><label>Docelowy F&amp;B Cost % dla tego obiektu</label>'+
+     '<input type="number" step="0.1" id="ent-target" value="'+target+'" placeholder="30"></div>'+
+     '<div style="display:flex;align-items:flex-end"><button class="btn primary block" onclick="saveTargetFB()">Zapisz cel</button></div></div>';
+  h+='<div class="progress-row" style="margin-top:8px"><div class="progress"><i style="width:'+Math.min(100,T.fbCostPct)+'%;background:'+(T.fbCostPct<=target?'var(--g-teal)':'var(--g-warm)')+'"></i></div>'+
+     '<span class="progress-lbl">'+fmtPct(T.fbCostPct)+' / cel '+target+'%</span></div>';
+  h+='<div class="badge '+(T.fbCostPct<=target?'up':'dn')+'" style="margin-top:8px">'+(T.fbCostPct<=target?'✓ W granicach celu':'⚠ Powyżej celu o '+(T.fbCostPct-target).toFixed(1)+'pp')+'</div>';
+  h+='</div>';
+
+  // ── Forecast ──
+  if(fc){
+    h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Prognoza końca miesiąca <small>na podstawie '+fc.filledDays+' dni z danymi</small></div>';
+    h+='<div class="ccards">'+
+      ccard('Prognoza przychodu',fmt(fc.projRev))+
+      ccard('Prognoza kosztu',fmt(fc.projCost))+
+      ccard('Prognoza F&B Cost %',fmtPct(fc.projFbPct))+
+      ccard('Pozostało dni',fc.remainingDays)+
+      '</div></div>';
+  }
+
+  // ── Budget vs actual ──
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Budżet miesięczny <small>plan vs wykonanie</small></div>';
+  h+='<div class="frow2">'+
+     '<div class="field"><label>Plan przychodu (zł)</label><input type="number" step="1" id="ent-budget-rev" value="'+(budget.rev||'')+'" placeholder="0"></div>'+
+     '<div class="field"><label>Plan kosztu (zł)</label><input type="number" step="1" id="ent-budget-cost" value="'+(budget.cost||'')+'" placeholder="0"></div>'+
+     '</div><button class="btn sm" onclick="saveBudgetInputs()">Zapisz budżet</button>';
+  if(budget.rev>0||budget.cost>0){
+    var revPct=budget.rev>0?Math.min(100,T.revTotal/budget.rev*100):0;
+    var costPct=budget.cost>0?Math.min(100,T.costTotal/budget.cost*100):0;
+    h+='<div style="margin-top:12px"><div class="progress-row"><div class="progress"><i style="width:'+revPct+'%"></i></div><span class="progress-lbl">Przychód '+fmt2(T.revTotal)+' / '+fmt2(budget.rev)+' zł</span></div>';
+    h+='<div class="progress-row"><div class="progress"><i style="width:'+costPct+'%;background:var(--g-warm)"></i></div><span class="progress-lbl">Koszt '+fmt2(T.costTotal)+' / '+fmt2(budget.cost)+' zł</span></div></div>';
+  }
+  h+='</div>';
+
+  // ── Rentowność miesięczna (labor) ──
+  h+='<div class="card" style="margin-bottom:16px">';
+  h+='<div class="stitle" style="margin-top:0">Rentowność miesięczna <small>koszt obsługi wpisywany ręcznie raz na miesiąc</small></div>';
+  h+='<div class="frow2">';
+  h+='<div class="field"><label>Koszt obsługi posiłku łącznie / miesiąc (magazyn, kuchnia, obsługa) — zł</label>'+
+     '<input type="number" step="0.01" inputmode="decimal" id="ent-labor" value="'+(T.laborMonthly||'')+'" placeholder="0.00"></div>';
+  h+='<div style="display:flex;align-items:flex-end"><button class="btn primary block" onclick="saveLabor()">Zapisz koszt obsługi</button></div>';
+  h+='</div>';
+  h+='<div class="ccards" style="margin-top:6px">'+
+    ccard('Śr. koszt obsługi/posiłek',fmt2(T.avgServicePerMeal)+' zł')+
+    ccard('Koszt posiłku food+labor',fmt2(T.foodLaborPerMeal)+' zł')+
+    ccard('Dochód z posiłku',fmt2(T.incomePerMeal)+' zł')+
+    ccard('Rentowność %',fmtPct(T.profitPct))+
+    ccard('Dochód bufety (PLN)',fmt(T.totalProfitPLN))+
+    '</div>';
+  h+='</div>';
+
+  // ── Ranking dni ──
+  h+='<div class="grid2" style="margin-bottom:16px">';
+  h+='<div class="card"><div class="stitle" style="margin-top:0">🏆 Top 5 dni (marża)</div>'+rankList(rank.best,'gold')+'</div>';
+  h+='<div class="card"><div class="stitle" style="margin-top:0">⚠️ 5 najsłabszych dni</div>'+rankList(rank.worst,'')+'</div>';
+  h+='</div>';
+
+  // ── Analiza dnia tygodnia + segmenty gości ──
+  h+='<div class="grid2" style="margin-bottom:16px">';
+  h+='<div class="chart-box"><div class="stitle" style="margin-top:0">Analiza dnia tygodnia <small>śr. F&B Cost % (wszystkie miesiące)</small></div><canvas id="ch-weekday"></canvas></div>';
+  h+='<div class="chart-box"><div class="stitle" style="margin-top:0">Struktura gości <small>dorośli / dzieci / dodatkowa sprzedaż</small></div><canvas id="ch-segments"></canvas>'+
+     '<div class="page-sub" style="margin-top:8px;text-align:center">Łącznie '+seg.total+' gości w miesiącu</div></div>';
+  h+='</div>';
+
+  // ── Tabele dzienne ──
+  h+='<div class="tabs">'+
+    '<button class="tab'+(_atab==='b'?' on':'')+'" onclick="switchATab(\'b\')">Śniadania</button>'+
+    '<button class="tab'+(_atab==='d'?' on':'')+'" onclick="switchATab(\'d\')">Kolacje</button>'+
+    '<button class="tab'+(_atab==='t'?' on':'')+'" onclick="switchATab(\'t\')">Razem</button>'+
+    '</div>';
+
+  h+='<div class="tbl-wrap"><table><thead>'+analysisHeader(_atab)+'</thead><tbody>';
+  M.days.forEach(function(x){h+=analysisRow(_atab,x,outliers)});
+  h+='</tbody></table></div>';
+  if(Object.keys(outliers).length)h+='<div class="page-sub" style="margin-top:6px">🔺 oznaczone dni odbiegają znacznie (&gt;1.5σ) od średniego F&B Cost % miesiąca</div>';
+
+  h+='<div class="chart-box" style="margin-top:16px"><div class="stitle" style="margin-top:0">F&amp;B Cost % narastająco — '+(_atab==='b'?'Śniadania':_atab==='d'?'Kolacje':'Razem')+'</div><canvas id="ch-atrend"></canvas></div>';
+
+  // ── Export ──
+  h+='<div class="btn-row" style="margin-top:6px;margin-bottom:20px">'+
+     '<button class="btn" onclick="exportAnalysisCSV()">'+ICONS.download+' Eksportuj CSV</button>'+
+     '<button class="btn" onclick="window.print()">🖨️ Drukuj / Zapisz jako PDF</button>'+
+     '</div>';
+  return h;
+}
+function rankList(days,numCls){
+  if(!days.length)return '<div class="page-sub">Brak wystarczających danych</div>';
+  return days.map(function(x,i){
+    var margin=x.t.revDay-x.t.costTotalDay;
+    return '<div class="rank-item"><div class="rank-num'+(numCls?' '+numCls:'')+'">'+(i+1)+'</div>'+
+      '<div class="rank-info">Dzień '+x.day+' <span style="color:var(--tx3)">· F&B '+fmtPct(safeDiv(x.t.costTotalDay,x.t.revDay)*100)+'</span></div>'+
+      '<div class="rank-val '+(margin>=0?'td-pos':'td-neg')+'">'+(margin>=0?'+':'')+fmt2(margin)+' zł</div></div>';
+  }).join('');
+}
+function analysisHeader(tab){
+  if(tab==='t')return '<tr><th>Dzień</th><th>Koszt dzień</th><th>+Cukiernia</th><th>Koszt narast.</th><th>Przychód dzień</th><th>Przychód narast.</th><th>F&B % narast.</th></tr>';
+  return '<tr><th>Dzień</th><th>Dorośli</th><th>Dzieci</th><th>Dodatk.</th><th>Suma</th><th>Suma narast.</th><th>Koszt dzień</th><th>Koszt narast.</th><th>Przychód total</th><th>Przychód narast.</th><th>Koszt/os.</th><th>Śr.przych./os.</th><th>F&B % narast.</th></tr>';
+}
+function analysisRow(tab,x,outliers){
+  outliers=outliers||{};
+  var out=outliers[x.day];
+  var cls=(x.hasData?'':'day-empty')+(out?' day-outlier':'');
+  var flag=out?(out==='high'?' 🔺':' 🔻'):'';
+  if(tab==='t'){
+    return '<tr class="'+cls+'"><td>'+x.day+flag+'</td><td>'+fmt2(x.t.costDay)+'</td><td>'+fmt2(x.cuk)+'</td><td>'+fmt2(x.t.costCum)+'</td><td>'+fmt2(x.t.revDay)+'</td><td>'+fmt2(x.t.revCum)+'</td><td>'+fmtPct(x.t.fbPctCum)+'</td></tr>';
+  }
+  var o=x[tab];
+  return '<tr class="'+cls+'"><td>'+x.day+flag+'</td><td>'+o.ad+'</td><td>'+o.ch+'</td><td>'+o.ex+'</td><td>'+o.sum+'</td><td>'+o.sumCum+'</td><td>'+fmt2(o.cost)+'</td><td>'+fmt2(o.costCum)+'</td><td>'+fmt2(o.revT)+'</td><td>'+fmt2(o.revCum)+'</td><td>'+fmt2(o.costPerG)+'</td><td>'+fmt2(o.avgRevG)+'</td><td>'+fmtPct(o.fbPctCum)+'</td></tr>';
+}
+function switchATab(tab){_atab=tab;lsSet('atab',tab);renderView()}
+function saveLabor(){
+  if(!requireEdit())return;
+  var v=readNum('ent-labor');
+  saveMeta(S.pid,S.ym,{labor:v});
+  toast('Zapisano koszt obsługi na '+mLabel(S.ym),'ok');
+  renderView();
+}
+function saveTargetFB(){
+  if(!requireEdit())return;
+  var v=readNum('ent-target')||30;
+  setTargetFB(S.pid,v);
+  toast('Zapisano cel F&B Cost: '+v+'%','ok');
+  renderView();
+}
+function saveBudgetInputs(){
+  if(!requireEdit())return;
+  saveBudget(S.pid,S.ym,{rev:readNum('ent-budget-rev'),cost:readNum('ent-budget-cost')});
+  toast('Zapisano budżet na '+mLabel(S.ym),'ok');
+  renderView();
+}
+function exportAnalysisCSV(){
+  var M=calcMonth(S.pid,S.ym);
+  var rows=[['Dzień','Dorośli śniad.','Dzieci śniad.','Dodatk. śniad.','Koszt śniad.','Przychód śniad.','Dorośli kolacja','Dzieci kolacja','Dodatk. kolacja','Koszt kolacji','Przychód kolacji','Cukiernia','Koszt total','Przychód total','F&B Cost % narast.']];
+  M.days.forEach(function(x){
+    rows.push([x.day,x.b.ad,x.b.ch,x.b.ex,x.b.cost.toFixed(2),x.b.revT.toFixed(2),x.d.ad,x.d.ch,x.d.ex,x.d.cost.toFixed(2),x.d.revT.toFixed(2),x.cuk.toFixed(2),x.t.costTotalDay.toFixed(2),x.t.revDay.toFixed(2),x.t.fbPctCum.toFixed(2)]);
+  });
+  var csv=rows.map(function(r){return r.join(';')}).join('\n');
+  var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='bufetcost-'+(currentProp()?currentProp().name:'raport')+'-'+S.ym+'.csv';
+  a.click();
+  toast('Wyeksportowano CSV','ok');
+}
+function afterAnalysis(){
+  if(!S.pid)return;
+  var M=calcMonth(S.pid,S.ym);
+  var labels=M.days.map(function(x){return x.day});
+  var data=M.days.map(function(x){return _atab==='t'?(isFinite(x.t.fbPctCum)?x.t.fbPctCum:0):(isFinite(x[_atab].fbPctCum)?x[_atab].fbPctCum:0)});
+  dChart('ch-atrend');
+  var ctx=document.getElementById('ch-atrend');if(ctx){
+    S.charts['ch-atrend']=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'F&B %',data:data,borderColor:getCSSv('--pink'),backgroundColor:'rgba(255,111,165,.12)',fill:true,tension:.3,pointRadius:0}]},
+      options:Object.assign({},chartDefaults(),{plugins:{legend:{display:false}}})});
+  }
+
+  var wd=weekdayAnalysis(S.pid);
+  dChart('ch-weekday');
+  var ctxw=document.getElementById('ch-weekday');if(ctxw){
+    S.charts['ch-weekday']=new Chart(ctxw,{type:'bar',data:{labels:wd.map(function(w){return w.name}),datasets:[{label:'F&B %',data:wd.map(function(w){return isFinite(w.avgFb)?w.avgFb:0}),backgroundColor:getCSSv('--violet'),borderRadius:4}]},
+      options:Object.assign({},chartDefaults(),{plugins:{legend:{display:false}}})});
+  }
+
+  var seg=guestSegments(M);
+  dChart('ch-segments');
+  var ctxs=document.getElementById('ch-segments');if(ctxs){
+    S.charts['ch-segments']=new Chart(ctxs,{type:'doughnut',data:{labels:['Dorośli','Dzieci','Sprzedaż dod.'],datasets:[{data:[seg.ad,seg.ch,seg.ex],backgroundColor:[getCSSv('--violet'),getCSSv('--teal'),getCSSv('--coral')],borderColor:getCSSv('--sur'),borderWidth:3}]},
+      options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:getCSSv('--tx2'),font:{size:10},boxWidth:10}}}}});
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: COMPARE (MoM / YoY / Property vs Property)
+═══════════════════════════════════════════════════════ */
+var _ctab=lsGet('ctab','mom');
+var _cmpPid2=null;
+function viewCompare(){
+  if(!S.pid)return emptyState('Brak obiektów','Dodaj obiekt, aby porównywać dane.','properties','Dodaj obiekt');
+  window._cmpData=null;window._multiData=null;
+  var h='<div class="tabs">'+
+    '<button class="tab'+(_ctab==='mom'?' on':'')+'" onclick="switchCTab(\'mom\')">Miesiąc vs Miesiąc</button>'+
+    '<button class="tab'+(_ctab==='yoy'?' on':'')+'" onclick="switchCTab(\'yoy\')">Rok vs Rok</button>'+
+    '<button class="tab'+(_ctab==='multi'?' on':'')+'" onclick="switchCTab(\'multi\')">Wiele lat</button>'+
+    '<button class="tab'+(_ctab==='prop'?' on':'')+'" onclick="switchCTab(\'prop\')">Obiekt vs Obiekt</button>'+
+    '</div>';
+  if(_ctab==='mom')h+=compareMoM();
+  else if(_ctab==='yoy')h+=compareYoY();
+  else if(_ctab==='multi')h+=compareMulti();
+  else h+=compareProp();
+  return h;
+}
+function switchCTab(t){_ctab=t;lsSet('ctab',t);renderView()}
+
+function compareMulti(){
+  var mm=S.ym.split('-')[1];
+  var data=multiYearForMonth(S.pid,mm);
+  if(data.length<1)return '<div class="empty">Brak danych historycznych dla miesiąca '+MONTHS_FULL[+mm-1]+' w innych latach.</div>';
+  var h='<div class="page-sub" style="margin-bottom:10px">'+MONTHS_FULL[+mm-1]+' — porównanie na przestrzeni lat ('+data.map(function(d){return d.year}).join(', ')+')</div>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th>Rok</th><th>Przychód total</th><th>Koszt total</th><th>F&B Cost %</th><th>Posiłków</th></tr></thead><tbody>';
+  data.forEach(function(d){
+    h+='<tr><td>'+d.year+'</td><td>'+fmt2(d.revTotal)+'</td><td>'+fmt2(d.costTotal)+'</td><td>'+fmtPct(d.fbCostPct)+'</td><td>'+d.mealsTotal+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div class="chart-box" style="margin-top:16px"><div class="stitle" style="margin-top:0">Przychód vs Koszt — '+MONTHS_FULL[+mm-1]+' wg roku</div><canvas id="ch-multi"></canvas></div>';
+  window._multiData=data;
+  return h;
+}
+
+function compareMoM(){
+  var cur=S.ym,pm=prevM(cur);
+  var Tc=calcMonth(S.pid,cur).totals,Tp=calcMonth(S.pid,pm).totals;
+  var d=Tc.revTotal-Tp.revTotal,pct=Tp.revTotal>0?d/Tp.revTotal*100:null;
+  var h='<div class="page-sub" style="margin-bottom:10px">'+mLabelFull(cur)+' vs '+mLabelFull(pm)+'</div>';
+  h+='<div class="ccards">'+
+    ccard(mLabel(cur)+' — przychód',fmt(Tc.revTotal))+
+    ccard(mLabel(pm)+' — przychód',fmt(Tp.revTotal))+
+    ccard('Zmiana',(d>=0?'+':'')+fmt2(d)+' zł')+
+    '<div class="ccard"><div class="ccard-l">Zmiana %</div><div class="ccard-v">'+chBadge(pct)+'</div></div>'+
+    '</div>';
+  h+=compareTable([
+    ['Goście śniadania',Tc.bGuests,Tp.bGuests],
+    ['Goście kolacje',Tc.dGuests,Tp.dGuests],
+    ['Koszt total',Tc.costTotal,Tp.costTotal],
+    ['Przychód total',Tc.revTotal,Tp.revTotal],
+    ['F&B Cost %',Tc.fbCostPct,Tp.fbCostPct,true],
+    ['Dochód bufety (PLN)',Tc.totalProfitPLN,Tp.totalProfitPLN]
+  ],mLabel(cur),mLabel(pm));
+  h+='<div class="chart-box" style="margin-top:16px"><div class="stitle" style="margin-top:0">Przychód dzień po dniu</div><canvas id="ch-cmp"></canvas></div>';
+  window._cmpData={type:'mom',a:calcMonth(S.pid,cur),b:calcMonth(S.pid,pm),la:mLabel(cur),lb:mLabel(pm)};
+  return h;
+}
+function compareYoY(){
+  var cur=S.ym,ly=yoyM(cur);
+  var Tc=calcMonth(S.pid,cur).totals,Tl=calcMonth(S.pid,ly).totals;
+  var d=Tc.revTotal-Tl.revTotal,pct=Tl.revTotal>0?d/Tl.revTotal*100:null;
+  var h='<div class="page-sub" style="margin-bottom:10px">'+mLabelFull(cur)+' vs '+mLabelFull(ly)+' (rok wcześniej)</div>';
+  h+='<div class="ccards">'+
+    ccard(cur,fmt(Tc.revTotal))+
+    ccard(ly,fmt(Tl.revTotal))+
+    ccard('Zmiana',(d>=0?'+':'')+fmt2(d)+' zł')+
+    '<div class="ccard"><div class="ccard-l">Zmiana %</div><div class="ccard-v">'+chBadge(pct)+'</div></div>'+
+    '</div>';
+  h+=compareTable([
+    ['Goście śniadania',Tc.bGuests,Tl.bGuests],
+    ['Goście kolacje',Tc.dGuests,Tl.dGuests],
+    ['Koszt total',Tc.costTotal,Tl.costTotal],
+    ['Przychód total',Tc.revTotal,Tl.revTotal],
+    ['F&B Cost %',Tc.fbCostPct,Tl.fbCostPct,true],
+    ['Dochód bufety (PLN)',Tc.totalProfitPLN,Tl.totalProfitPLN]
+  ],cur,ly);
+  h+='<div class="chart-box" style="margin-top:16px"><div class="stitle" style="margin-top:0">Przychód dzień po dniu</div><canvas id="ch-cmp"></canvas></div>';
+  window._cmpData={type:'yoy',a:calcMonth(S.pid,cur),b:calcMonth(S.pid,ly),la:cur,lb:ly};
+  return h;
+}
+function compareProp(){
+  var others=S.props.filter(function(p){return p.id!==S.pid});
+  if(!others.length)return '<div class="empty">Dodaj drugi obiekt, aby porównać.</div>';
+  if(!_cmpPid2||!others.find(function(p){return p.id===_cmpPid2}))_cmpPid2=others[0].id;
+  var opts=others.map(function(p){return '<option value="'+p.id+'"'+(p.id===_cmpPid2?' selected':'')+'>'+esc(p.name)+'</option>'}).join('');
+  var h='<div class="field" style="max-width:280px"><label>Porównaj z obiektem</label><select class="s-input" onchange="_cmpPid2=this.value;renderView()">'+opts+'</select></div>';
+  var Tc=calcMonth(S.pid,S.ym).totals,Tb=calcMonth(_cmpPid2,S.ym).totals;
+  var nameA=currentProp().name,nameB=S.props.find(function(p){return p.id===_cmpPid2}).name;
+  h+='<div class="page-sub" style="margin:10px 0">'+mLabelFull(S.ym)+'</div>';
+  h+=compareTable([
+    ['Goście śniadania',Tc.bGuests,Tb.bGuests],
+    ['Goście kolacje',Tc.dGuests,Tb.dGuests],
+    ['Koszt total',Tc.costTotal,Tb.costTotal],
+    ['Przychód total',Tc.revTotal,Tb.revTotal],
+    ['F&B Cost %',Tc.fbCostPct,Tb.fbCostPct,true],
+    ['Dochód bufety (PLN)',Tc.totalProfitPLN,Tb.totalProfitPLN]
+  ],nameA,nameB);
+  window._cmpData=null;
+  return h;
+}
+function compareTable(rows,la,lb){
+  var h='<div class="tbl-wrap"><table><thead><tr><th>Metryka</th><th>'+esc(la)+'</th><th>'+esc(lb)+'</th><th>Δ</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var isPct=r[3];
+    var a=r[1],b=r[2],d=a-b;
+    var av=isPct?fmtPct(a):fmt2(a);
+    var bv=isPct?fmtPct(b):fmt2(b);
+    var dv=isPct?(d>=0?'+':'')+d.toFixed(1)+'pp':(d>=0?'+':'')+fmt2(d);
+    h+='<tr><td style="font-family:var(--fb)">'+r[0]+'</td><td>'+av+'</td><td>'+bv+'</td><td class="'+(d>=0?'td-pos':'td-neg')+'">'+dv+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  return h;
+}
+function afterCompare(){
+  dChart('ch-cmp');dChart('ch-multi');
+  if(window._multiData){
+    var md=window._multiData;
+    dChart('ch-multi');
+    var ctxm=document.getElementById('ch-multi');if(ctxm){
+      S.charts['ch-multi']=new Chart(ctxm,{type:'bar',data:{labels:md.map(function(d){return d.year}),datasets:[
+        {label:'Przychód',data:md.map(function(d){return d.revTotal}),backgroundColor:getCSSv('--pink'),borderRadius:4},
+        {label:'Koszt',data:md.map(function(d){return d.costTotal}),backgroundColor:getCSSv('--teal'),borderRadius:4}
+      ]},options:Object.assign({},chartDefaults(),{plugins:{legend:{display:true,labels:{color:getCSSv('--tx2'),font:{size:10}}}}})});
+    }
+    return;
+  }
+  if(!window._cmpData)return;
+  var cd=window._cmpData;
+  var maxLen=Math.max(cd.a.days.length,cd.b.days.length);
+  var labels=[];for(var i=1;i<=maxLen;i++)labels.push(i);
+  dChart('ch-cmp');
+  var ctx=document.getElementById('ch-cmp');if(ctx){
+    S.charts['ch-cmp']=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+      {label:cd.la,data:cd.a.days.map(function(x){return x.t.revCum}),borderColor:getCSSv('--pink'),backgroundColor:'transparent',tension:.3,pointRadius:0},
+      {label:cd.lb,data:cd.b.days.map(function(x){return x.t.revCum}),borderColor:getCSSv('--teal'),backgroundColor:'transparent',tension:.3,pointRadius:0,borderDash:[5,4]}
+    ]},options:Object.assign({},chartDefaults(),{plugins:{legend:{display:true,labels:{color:getCSSv('--tx2'),font:{size:10}}}}})});
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: PROPERTIES (obiekty)
+═══════════════════════════════════════════════════════ */
+function viewProperties(){
+  var h='<div class="btn-row" style="margin-bottom:14px"><button class="btn primary" onclick="openPropModal()">'+ICONS.plus+' Dodaj obiekt</button></div>';
+  if(!S.props.length){h+=emptyState('Brak obiektów','Dodaj pierwszy hotel/obiekt, aby zacząć wprowadzać dane bufetu.');return h;}
+  S.props.forEach(function(p){
+    var months=getAllMonthsWithData(p.id);
+    var myRole=getMyRole(p);
+    var isAdmin=myRole==='admin';
+    var memberCount=(p.members||[{email:p.ownerEmail||'',role:'admin'}]).length;
+    h+='<div class="propcard"><div><b>'+esc(p.name)+'</b><div class="meta">'+(months.length? months.length+' mies. z danymi · ostatni: '+mLabel(months[months.length-1]) : 'brak danych')+
+       (FB_CONFIGURED&&S.uid?' · 👥 '+memberCount+' os.':'')+'</div></div>'+
+       '<div class="btn-row">'+
+       (FB_CONFIGURED&&S.uid?'<button class="icon-btn" onclick="openTeamModal(\''+p.id+'\')" title="Zespół">👥</button>':'')+
+       (isAdmin||!FB_CONFIGURED?'<button class="icon-btn" onclick="openPropModal(\''+p.id+'\')">'+ICONS.edit+'</button><button class="icon-btn" onclick="confirmDeleteProp(\''+p.id+'\')">'+ICONS.trash+'</button>':'')+
+       '</div></div>';
+  });
+  return h;
+}
+function openPropModal(id){
+  var p=id?S.props.find(function(x){return x.id===id}):null;
+  showModal((p?'Edytuj obiekt':'Nowy obiekt'),
+    '<div class="field"><label>Nazwa obiektu (hotelu)</label><input class="s-input" id="pm-name" value="'+(p?esc(p.name):'')+'" placeholder="np. Shellter Beach Resort"></div>'+
+    '<div class="btn-row"><button class="btn primary block" onclick="savePropModal('+(p?"'"+p.id+"'":'null')+')">Zapisz</button></div>'
+  );
+}
+function savePropModal(id){
+  var name=document.getElementById('pm-name').value.trim();
+  if(!name){toast('Podaj nazwę obiektu','err');return}
+  if(id)renameProperty(id,name);else{var newId=addProperty(name);S.pid=newId;lsSet('lastPid',newId);}
+  closeModal();refreshProps();refreshCurrentRole();renderShell();renderView();
+  toast('Zapisano obiekt','ok');
+}
+function confirmDeleteProp(id){
+  var p=S.props.find(function(x){return x.id===id});
+  showModal('Usunąć obiekt?',
+    '<p style="font-size:.85rem;color:var(--tx2);margin-bottom:16px">Usunięcie <b>'+esc(p.name)+'</b> skasuje trwale wszystkie wprowadzone dla niego dane dzienne. Tej operacji nie można cofnąć.</p>'+
+    '<div class="btn-row"><button class="btn danger block" onclick="doDeleteProp(\''+id+'\')">Usuń trwale</button><button class="btn block" onclick="closeModal()">Anuluj</button></div>'
+  );
+}
+function doDeleteProp(id){
+  deleteProperty(id);closeModal();refreshProps();refreshCurrentRole();renderShell();renderView();
+  toast('Obiekt usunięty','ok');
+}
+
+/* ═══ TEAM / MEMBERS ═══ */
+function openTeamModal(pid){
+  var p=S.props.find(function(x){return x.id===pid});
+  if(!p)return;
+  var isAdmin=getMyRole(p)==='admin';
+  var members=p.members||[{email:p.ownerEmail||'',role:'admin'}];
+  var body='<div style="font-size:.8rem;color:var(--tx2);margin-bottom:14px">Osoby z dostępem do <b>'+esc(p.name)+'</b>:</div>';
+  body+=members.map(function(m){
+    var initial=(m.email||'?').charAt(0).toUpperCase();
+    return '<div class="team-member"><div class="team-avatar">'+initial+'</div>'+
+      '<div class="team-info"><div class="team-email">'+esc(m.email)+'</div><div class="team-role">'+({admin:'Administrator',manager:'Manager — edycja',viewer:'Podgląd — tylko odczyt'}[m.role]||m.role)+'</div></div>'+
+      (isAdmin&&m.email!==p.ownerEmail?'<button class="icon-btn" onclick="removeMemberAndRefresh(\''+pid+'\',\''+esc(m.email)+'\')">'+ICONS.trash+'</button>':'')+
+      '</div>';
+  }).join('');
+  if(isAdmin){
+    body+='<div style="margin-top:16px"><div class="field"><label>Zaproś nową osobę (email)</label><input class="s-input" id="team-invite-email" type="email" placeholder="osoba@hotel.pl" onkeydown="if(event.key===\'Enter\')doInviteMember(\''+pid+'\')"></div>'+
+      '<div class="field"><label>Rola</label><select class="s-input" id="team-invite-role"><option value="manager">Manager — może edytować dane</option><option value="viewer">Podgląd — tylko odczyt</option></select></div>'+
+      '<button class="btn primary block" onclick="doInviteMember(\''+pid+'\')">+ Zaproś</button>'+
+      '<p style="font-size:.68rem;color:var(--tx3);margin-top:8px">Osoba musi mieć (lub założyć) konto w BufetCost na ten sam adres email — wtedy automatycznie zobaczy ten obiekt po zalogowaniu.</p></div>';
+  }else{
+    body+='<p style="font-size:.72rem;color:var(--tx3);margin-top:14px">Tylko administrator obiektu może zapraszać nowe osoby.</p>';
+  }
+  showModal('👥 Zespół obiektu',body);
+}
+function doInviteMember(pid){
+  var email=document.getElementById('team-invite-email').value;
+  var role=document.getElementById('team-invite-role').value;
+  var res=inviteMemberToProperty(pid,email,role);
+  if(!res.ok){toast(res.msg,'err');return}
+  refreshProps();
+  toast('Zaproszono '+email,'ok');
+  openTeamModal(pid);
+}
+function removeMemberAndRefresh(pid,email){
+  removeMemberFromProperty(pid,email);
+  refreshProps();
+  toast('Usunięto dostęp dla '+email,'ok');
+  openTeamModal(pid);
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: SETTINGS
+═══════════════════════════════════════════════════════ */
+function viewSettings(){
+  var h='';
+  var curT=currentTheme();
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Kolorystyka</div>';
+  h+='<div class="theme-grid">';
+  THEMES.forEach(function(t){
+    h+='<div class="theme-swatch'+(t.id===curT?' on':'')+'" onclick="setTheme(\''+t.id+'\')">'+
+       '<div class="tsw-preview" style="background:'+t.bg+'"><i></i><div style="position:absolute;inset:0;background:'+t.g+';opacity:.85"></div></div>'+
+       '<div class="tsw-name">'+t.name+'</div><div class="tsw-kind">'+t.kind+'</div>'+
+       '</div>';
+  });
+  h+='</div></div>';
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Dane testowe z arkusza Excel</div>';
+  h+='<p style="font-size:.8rem;color:var(--tx2);margin-bottom:12px">Wczytaj rzeczywiste dane ze Stycznia i Lutego 2026 (obiekt „Shellter”) z przesłanego arkusza, aby od razu zobaczyć jak działają wykresy, analizy i porównania na gotowych liczbach.</p>';
+  h+='<button class="btn primary" onclick="confirmSeedData()">📥 Wczytaj dane Styczeń + Luty 2026 (Shellter)</button>';
+  h+='</div>';
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Dane i synchronizacja</div>';
+  h+='<p style="font-size:.8rem;color:var(--tx2);margin-bottom:12px">Wszystkie dane są obecnie zapisywane lokalnie na tym urządzeniu (localStorage). Synchronizacja online (Firestore) oraz repozytorium GitHub zostaną podłączone w kolejnym etapie — eksport JSON poniżej ułatwi tę migrację.</p>';
+  h+='<div class="btn-row">'+
+    '<button class="btn" onclick="exportData()">'+ICONS.download+' Eksportuj dane (JSON)</button>'+
+    '<label class="btn" style="display:inline-flex;align-items:center;gap:6px">'+ICONS.upload+' Importuj dane<input type="file" accept=".json" style="display:none" onchange="importData(this)"></label>'+
+    '</div></div>';
+
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Instalacja aplikacji</div>';
+  h+='<p style="font-size:.8rem;color:var(--tx2);margin-bottom:10px">Zainstaluj BufetCost jako aplikację na telefonie lub komputerze, aby korzystać z niej na pełnym ekranie i offline.</p>';
+  h+='<div id="settings-install-slot"><button class="btn primary" onclick="triggerInstall()">Zainstaluj aplikację</button></div></div>';
+
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Cofnij ostatnią zmianę</div>';
+  h+='<p style="font-size:.8rem;color:var(--tx2);margin-bottom:10px">'+(_lastAction?('Ostatnio zapisano dzień '+_lastAction.day+' ('+mLabel(_lastAction.ym)+'). Możesz przywrócić poprzednią wartość tego dnia.'):'Brak akcji do cofnięcia w tej sesji.')+'</p>';
+  h+='<button class="btn'+(_lastAction?' primary':'')+'" onclick="undoLastAction()"'+(_lastAction?'':' disabled style="opacity:.5"')+'>↩ Cofnij ostatni zapis</button></div>';
+
+  h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Strefa niebezpieczna</div>';
+  h+='<button class="btn danger" onclick="confirmClearAll()">Wyczyść wszystkie dane lokalne</button></div>';
+
+  h+='<div class="page-sub" style="text-align:center;margin-top:20px">BufetCost v1.0 · dane PL · waluta PLN</div>';
+  return h;
+}
+function confirmSeedData(){
+  showModal('Wczytać dane testowe?',
+    '<p style="font-size:.85rem;color:var(--tx2);margin-bottom:16px">Zostanie utworzony (lub uzupełniony, jeśli już istnieje) obiekt <b>Shellter</b> z pełnymi danymi dziennymi za Styczeń i Luty 2026, dokładnie takimi jak w oryginalnym arkuszu Excel. Istniejące dane dla tych dni w tym obiekcie zostaną nadpisane.</p>'+
+    '<div class="btn-row"><button class="btn primary block" onclick="doSeedData()">Wczytaj dane</button><button class="btn block" onclick="closeModal()">Anuluj</button></div>'
+  );
+}
+function doSeedData(){
+  seedShellterData();
+  closeModal();
+  renderShell();
+  go('dashboard');
+  toast('Wczytano dane Styczeń + Luty 2026 dla Shellter','ok');
+}
+function exportData(){
+  var all={};
+  Object.keys(localStorage).filter(function(k){return k.indexOf(LS_PREFIX)===0}).forEach(function(k){
+    all[k.slice(LS_PREFIX.length)]=JSON.parse(localStorage.getItem(k));
+  });
+  var blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='bufetcost-export-'+todayYM()+'.json';
+  a.click();
+  toast('Wyeksportowano dane','ok');
+}
+function importData(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      Object.keys(data).forEach(function(k){lsSet(k,data[k])});
+      toast('Zaimportowano dane','ok');
+      refreshProps();renderShell();renderView();
+    }catch(err){toast('Błąd pliku importu','err')}
+  };
+  reader.readAsText(file);
+}
+function confirmClearAll(){
+  showModal('Wyczyścić wszystkie dane?',
+    '<p style="font-size:.85rem;color:var(--tx2);margin-bottom:16px">Skasuje to trwale wszystkie obiekty i wprowadzone dane na tym urządzeniu. Zalecamy najpierw wykonać eksport JSON.</p>'+
+    '<div class="btn-row"><button class="btn danger block" onclick="doClearAll()">Wyczyść trwale</button><button class="btn block" onclick="closeModal()">Anuluj</button></div>'
+  );
+}
+function doClearAll(){
+  Object.keys(localStorage).filter(function(k){return k.indexOf(LS_PREFIX)===0}).forEach(function(k){localStorage.removeItem(k)});
+  closeModal();refreshProps();S.ym=todayYM();renderShell();go('dashboard');
+  toast('Wyczyszczono dane','ok');
+}
+
+/* ═══ MODAL helpers ═══ */
+function showModal(title,bodyHtml){
+  document.getElementById('modal-root').innerHTML=
+    '<div class="modal-bg on" onclick="if(event.target===this)closeModal()"><div class="modal"><h3>'+esc(title)+'</h3>'+bodyHtml+'</div></div>';
+}
+function closeModal(){document.getElementById('modal-root').innerHTML=''}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: DASHBOARD
+═══════════════════════════════════════════════════════ */
+var _dashAll=lsGet('dashAll',false);
+function getDashWidgets(){return lsGet('dashWidgets',{today:true,kpi:true,rings:true,trend:true,splitfbday:true})}
+function setDashWidget(key,val){var w=getDashWidgets();w[key]=val;lsSet('dashWidgets',w)}
+function toggleDashAll(){_dashAll=!_dashAll;lsSet('dashAll',_dashAll);renderView()}
+
+function calcAllPropsDays(ym){
+  var n=dim(ym);
+  var perProp=S.props.map(function(p){return calcMonth(p.id,ym)});
+  var days=[],cumRev=0,cumCost=0;
+  for(var i=0;i<n;i++){
+    var revDay=0,costDay=0;
+    perProp.forEach(function(pm){var x=pm.days[i];if(x){revDay+=x.t.revDay;costDay+=x.t.costTotalDay;}});
+    cumRev+=revDay;cumCost+=costDay;
+    days.push({day:i+1,hasData:true,t:{revDay:revDay,costTotalDay:costDay,revCum:cumRev,costCum:cumCost,fbPctCum:safeDiv(cumCost,cumRev)*100}});
+  }
+  return days;
+}
+
+function viewDashboard(){
+  if(!S.pid)return emptyState('Brak obiektów','Dodaj pierwszy obiekt, aby zacząć wprowadzać dane.','properties','Dodaj obiekt');
+  var w=getDashWidgets();
+  var isAll=_dashAll&&S.props.length>1;
+  var T,days;
+  if(isAll){T=calcAllProps(S.ym).totals;days=calcAllPropsDays(S.ym);}
+  else{var M=calcMonth(S.pid,S.ym);T=M.totals;days=M.days;}
+  var pm=prevM(S.ym);
+  var Tp=isAll?calcAllProps(pm).totals:calcMonth(S.pid,pm).totals;
+  var momRev=Tp.revTotal>0?(T.revTotal-Tp.revTotal)/Tp.revTotal*100:null;
+  var target=isAll?30:getTargetFB(S.pid);
+  window._dashDays=days;window._dashT=T;
+
+  var h='';
+  h+='<div class="btn-row" style="margin-bottom:14px;justify-content:space-between;align-items:center">';
+  if(S.props.length>1){
+    h+='<div class="pill-select" style="max-width:340px"><button class="'+(!isAll?'on':'')+'" onclick="_dashAll=false;lsSet(\'dashAll\',false);renderView()">'+esc(currentProp().name)+'</button><button class="'+(isAll?'on':'')+'" onclick="_dashAll=true;lsSet(\'dashAll\',true);renderView()">Wszystkie obiekty (suma)</button></div>';
+  } else h+='<div></div>';
+  h+='<button class="icon-btn" onclick="openDashPersonalize()" title="Personalizuj pulpit">⚙️</button>';
+  h+='</div>';
+
+  if(w.today&&!isAll)h+=dashTodayCard();
+
+  if(w.kpi){
+    h+='<div class="kgrid">';
+    h+=kpiCard('Przychód total','warm',fmt(T.revTotal),momRev!==null?chBadge(momRev)+' vs '+mLabel(pm):'');
+    h+=kpiCard('Koszt total (F&amp;B)','cool',fmt(T.costTotal),isAll?'suma '+S.props.length+' obiektów':'w tym cukiernia '+fmt(T.cukSum));
+    h+=kpiCard('Śniadania — goście','',T.bGuests+'',isAll?'':'koszt/os. '+fmt2(safeDiv(T.bCost,T.bGuests))+' zł');
+    h+=kpiCard('Kolacje — goście','',T.dGuests+'',isAll?'':'koszt/os. '+fmt2(safeDiv(T.dCost,T.dGuests))+' zł');
+    h+=kpiCard('Posiłków razem','',T.mealsTotal+'','śniadania + kolacje');
+    h+=kpiCard('Dochód bufety (PLN)','warm',fmt(T.totalProfitPLN),'rentowność '+fmtPct(T.profitPct));
+    h+='</div>';
+  }
+
+  if(w.rings){
+    h+='<div class="grid2">';
+    h+='<div class="chart-box"><div class="ring-wrap">'+
+        ringSVG('fb',T.fbCostPct,'F&B COST',getCSSv('--violet'),getCSSv('--pink'))+
+        '<div><div class="stitle" style="margin:0">F&B Cost narastająco</div>'+
+        '<div class="page-sub">Koszt / przychód bufetowy total (śniadania+kolacje+cukiernia)</div>'+
+        '<div style="margin-top:8px" class="badge '+(T.fbCostPct<=target?'up':'dn')+'">'+(T.fbCostPct<=target?'W normie (≤'+target+'%)':'Powyżej celu '+target+'%')+'</div></div>'+
+      '</div></div>';
+    h+='<div class="chart-box"><div class="ring-wrap">'+
+        ringSVG('pf',Math.max(0,T.profitPct),'RENTOWNOŚĆ',getCSSv('--teal'),getCSSv('--violet'))+
+        '<div><div class="stitle" style="margin:0">Rentowność posiłku</div>'+
+        '<div class="page-sub">Dochód na posiłek: '+fmt2(T.incomePerMeal)+' zł</div>'+
+        '<div style="margin-top:8px" class="page-sub">Śr. koszt obsługi: '+fmt2(T.avgServicePerMeal)+' zł/posiłek (wpisz w Analizie miesięcznej)</div></div>'+
+      '</div></div>';
+    h+='</div>';
+  }
+
+  if(w.trend)h+='<div class="chart-box"><div class="stitle">Przychód vs koszt — narastająco w miesiącu</div><canvas id="ch-trend" height="90"></canvas></div>';
+  if(w.splitfbday){
+    h+='<div class="grid2">';
+    h+='<div class="chart-box"><div class="stitle">Śniadania vs Kolacje — udział w przychodzie</div><canvas id="ch-split"></canvas></div>';
+    h+='<div class="chart-box"><div class="stitle">F&amp;B Cost % dziennie</div><canvas id="ch-fbday"></canvas></div>';
+    h+='</div>';
+  }
+  return h;
+}
+function dashTodayCard(){
+  var ty=todayYM(),td=(new Date()).getDate();
+  var filled=hasDay(S.pid,ty,td);
+  var h='<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">';
+  h+='<div><div class="stitle" style="margin:0 0 2px 0">📅 Dzisiaj — '+td+' '+mLabelFull(ty)+'</div>';
+  h+='<div class="badge '+(filled?'up':'dn')+'">'+(filled?'✓ Dane wprowadzone':'✗ Brak danych na dziś')+'</div></div>';
+  h+='<button class="btn primary sm" onclick="goToTodayEntry()">'+(filled?'Edytuj dzisiaj':'Wprowadź dzisiaj')+'</button>';
+  h+='</div>';
+  return h;
+}
+function goToTodayEntry(){
+  S.ym=todayYM();lsSet('lastYm',S.ym);
+  S.day=(new Date()).getDate();
+  go('entry');
+}
+function openDashPersonalize(){
+  var w=getDashWidgets();
+  var items=[['today','Karta „Dzisiaj”'],['kpi','Karty KPI'],['rings','Pierścienie F&B Cost / Rentowność'],['trend','Wykres przychód vs koszt'],['splitfbday','Wykresy: podział + F&B dziennie']];
+  var body=items.map(function(it){
+    return '<div class="chk-row"><span>'+it[1]+'</span><div class="switch'+(w[it[0]]?' on':'')+'" onclick="toggleDashWidget(\''+it[0]+'\',this)"><i></i></div></div>';
+  }).join('');
+  showModal('Personalizuj pulpit',body+'<div class="btn-row" style="margin-top:14px"><button class="btn block" onclick="closeModal()">Gotowe</button></div>');
+}
+function toggleDashWidget(key,el){
+  var w=getDashWidgets();
+  w[key]=!w[key];
+  lsSet('dashWidgets',w);
+  el.classList.toggle('on',w[key]);
+  renderView();
+  openDashPersonalize();
+}
+function kpiCard(label,cls,val,sub){
+  return '<div class="kpi '+(cls||'')+'"><div class="kpi-lbl">'+label+'</div><div class="kpi-val">'+val+'</div><div class="kpi-sub">'+(sub||'')+'</div></div>';
+}
+function chBadge(pct){
+  if(pct===null||!isFinite(pct))return '';
+  return '<span class="badge '+(pct>=0?'up':'dn')+'">'+(pct>=0?'▲ +':'▼ ')+Math.abs(pct).toFixed(1)+'%</span>';
+}
+function getCSSv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function dChart(id){if(S.charts[id]){try{S.charts[id].destroy()}catch(e){}delete S.charts[id]}}
+function chartDefaults(){
+  return {
+    plugins:{legend:{labels:{color:getCSSv('--tx2'),font:{size:10}}}},
+    scales:{
+      x:{ticks:{color:getCSSv('--tx3'),font:{size:9}},grid:{color:'rgba(255,255,255,.04)'}},
+      y:{ticks:{color:getCSSv('--tx3'),font:{size:9}},grid:{color:'rgba(255,255,255,.06)'}}
+    }
+  };
+}
+function afterDashboard(){
+  if(!S.pid)return;
+  var w=getDashWidgets();
+  var days=window._dashDays||[],T=window._dashT||{};
+  var labels=days.map(function(x){return x.day});
+
+  if(w.trend){
+    dChart('ch-trend');
+    var ctx=document.getElementById('ch-trend');if(ctx){
+      S.charts['ch-trend']=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[
+        {label:'Przychód narast.',data:days.map(function(x){return x.t.revCum}),borderColor:getCSSv('--pink'),backgroundColor:'rgba(255,111,165,.12)',fill:true,tension:.3,pointRadius:0},
+        {label:'Koszt narast.',data:days.map(function(x){return x.t.costCum}),borderColor:getCSSv('--teal'),backgroundColor:'rgba(34,211,238,.10)',fill:true,tension:.3,pointRadius:0}
+      ]},options:Object.assign({},chartDefaults(),{plugins:Object.assign({},chartDefaults().plugins,{legend:{display:true,labels:{color:getCSSv('--tx2'),font:{size:10}}}})})});
+    }
+  }
+
+  if(w.splitfbday){
+    dChart('ch-split');
+    var ctx2=document.getElementById('ch-split');if(ctx2){
+      S.charts['ch-split']=new Chart(ctx2,{type:'doughnut',data:{labels:['Śniadania','Kolacje'],datasets:[{data:[T.bRev,T.dRev],backgroundColor:[getCSSv('--amber'),getCSSv('--violet')],borderColor:getCSSv('--sur'),borderWidth:3,hoverOffset:6}]},
+        options:{cutout:'64%',plugins:{legend:{position:'bottom',labels:{color:getCSSv('--tx2'),font:{size:10},boxWidth:10}}}}});
+    }
+
+    dChart('ch-fbday');
+    var ctx3=document.getElementById('ch-fbday');if(ctx3){
+      S.charts['ch-fbday']=new Chart(ctx3,{type:'bar',data:{labels:labels,datasets:[{label:'F&B Cost % (dzień)',data:days.map(function(x){return isFinite(x.t.fbPctCum)?x.t.fbPctCum:0}),backgroundColor:getCSSv('--violet'),borderRadius:3}]},
+        options:Object.assign({},chartDefaults(),{plugins:{legend:{display:false}}})});
+    }
+  }
+}
+function emptyState(title,sub,goView,btnLabel){
+  return '<div class="empty">'+ICONS.empty+'<h3 style="color:var(--tx);margin-bottom:6px">'+title+'</h3><p style="font-size:.8rem;margin-bottom:16px">'+sub+'</p>'+
+    (goView?'<button class="btn primary" onclick="go(\''+goView+'\')">'+esc(btnLabel||'Przejdź')+'</button>':'')+'</div>';
+}
+
+/* ═══════════════════════════════════════════════════════
+   PWA: manifest + icon generated at runtime (no external assets needed)
+═══════════════════════════════════════════════════════ */
+function makeIconDataURL(size){
+  var c=document.createElement('canvas');c.width=size;c.height=size;
+  var ctx=c.getContext('2d');
+  var g=ctx.createLinearGradient(0,0,size,size);
+  g.addColorStop(0,'#7c6cf0');g.addColorStop(.5,'#c866ea');g.addColorStop(1,'#ff6fa5');
+  ctx.fillStyle=g;ctx.fillRect(0,0,size,size);
+  ctx.fillStyle='#fff';ctx.font='bold '+(size*0.52)+'px Outfit,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('B',size/2,size*0.56);
+  return c.toDataURL('image/png');
+}
+function setupPWA(){
+  try{
+    var icon192=makeIconDataURL(192),icon512=makeIconDataURL(512);
+    document.getElementById('pwa-favicon').href=icon192;
+    document.getElementById('pwa-apple-icon').href=icon192;
+    var startUrl=location.pathname||'./';
+    var scope=startUrl.substring(0,startUrl.lastIndexOf('/')+1)||'./';
+    var manifest={
+      id:'bufetcost-app',
+      name:'BufetCost — F&B P&L Analytics',short_name:'BufetCost',
+      description:'Analiza kosztów i przychodów bufetu hotelowego (śniadania, kolacje)',
+      start_url:startUrl,scope:scope,display:'standalone',orientation:'portrait-primary',
+      background_color:'#0d0b1f',theme_color:'#0d0b1f',lang:'pl',
+      categories:['business','finance','productivity'],
+      icons:[
+        {src:icon192,sizes:'192x192',type:'image/png',purpose:'any'},
+        {src:icon192,sizes:'192x192',type:'image/png',purpose:'maskable'},
+        {src:icon512,sizes:'512x512',type:'image/png',purpose:'any'},
+        {src:icon512,sizes:'512x512',type:'image/png',purpose:'maskable'}
+      ],
+      shortcuts:[
+        {name:'Wprowadź dzisiaj',short_name:'Wprowadź',url:'?action=entry',description:'Wprowadź dane bufetu na dziś'},
+        {name:'Pulpit',short_name:'Pulpit',url:'?action=dashboard',description:'Otwórz pulpit analityczny'}
+      ]
+    };
+    var blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+    document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+    registerSW();
+  }catch(e){}
+}
+function registerSW(){
+  if(!('serviceWorker' in navigator))return;
+  var swCode=[
+    'const CV="bufetcost-v1";',
+    'self.addEventListener("install",function(e){self.skipWaiting();});',
+    'self.addEventListener("activate",function(e){',
+    '  e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k!==CV}).map(function(k){return caches.delete(k)}))}).then(function(){return self.clients.claim()}));',
+    '});',
+    'self.addEventListener("fetch",function(e){',
+    '  if(e.request.mode==="navigate"){',
+    '    e.respondWith(fetch(e.request).then(function(r){var cl=r.clone();caches.open(CV).then(function(c){c.put(e.request,cl)});return r}).catch(function(){return caches.match(e.request)}));',
+    '    return;',
+    '  }',
+    '  e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request).then(function(res){var cl=res.clone();caches.open(CV).then(function(c){c.put(e.request,cl)});return res}).catch(function(){return r})}));',
+    '});'
+  ].join('\n');
+  var blob=new Blob([swCode],{type:'application/javascript'});
+  var swUrl=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(function(reg){
+    console.log('[PWA] Service Worker zarejestrowany, scope:',reg.scope);
+  }).catch(function(err){
+    console.log('[PWA] Rejestracja Service Workera nieudana:',err.message);
+  });
+}
+var _deferredInstall=null;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();_deferredInstall=e;
+  var slot=document.getElementById('install-slot');
+  if(slot)slot.insertAdjacentHTML('afterbegin','<button class="install-btn" onclick="triggerInstall()">📲 Zainstaluj aplikację</button>');
+});
+function triggerInstall(){
+  if(_deferredInstall){_deferredInstall.prompt();_deferredInstall.userChoice.then(function(){_deferredInstall=null});}
+  else toast('Instalacja: użyj menu przeglądarki „Dodaj do ekranu głównego”','');
+}
+
+/* ═══ RING helper (signature visual) ═══ */
+function ringSVG(id,pct,label,colorFrom,colorTo){
+  pct=Math.max(0,Math.min(100,pct||0));
+  var r=42,c=2*Math.PI*r,off=c-(pct/100)*c;
+  var gid='rg-'+id;
+  return '<div class="ring">'+
+    '<svg viewBox="0 0 100 100">'+
+      '<defs><linearGradient id="'+gid+'" x1="0%" y1="0%" x2="100%" y2="100%">'+
+        '<stop offset="0%" stop-color="'+colorFrom+'"/><stop offset="100%" stop-color="'+colorTo+'"/>'+
+      '</linearGradient></defs>'+
+      '<circle class="ring-bg" cx="50" cy="50" r="'+r+'"/>'+
+      '<circle class="ring-fg" cx="50" cy="50" r="'+r+'" stroke="url(#'+gid+')" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'"/>'+
+    '</svg>'+
+    '<div class="ring-val"><b>'+(isFinite(pct)?pct.toFixed(1):'0.0')+'%</b><span>'+label+'</span></div>'+
+  '</div>';
+}
+</script>
+</body>
+</html>
