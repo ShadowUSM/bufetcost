@@ -1847,9 +1847,9 @@ function compareMoM(){
   h+=compareTable([
     ['Goście śniadania',Tc.bGuests,Tp.bGuests],
     ['Goście kolacje',Tc.dGuests,Tp.dGuests],
-    ['Koszt total',Tc.costTotal,Tp.costTotal],
+    ['Koszt total',Tc.costTotal,Tp.costTotal,false,true],
     ['Przychód total',Tc.revTotal,Tp.revTotal],
-    ['F&B Cost %',Tc.fbCostPct,Tp.fbCostPct,true],
+    ['F&B Cost %',Tc.fbCostPct,Tp.fbCostPct,true,true],
     ['Dochód bufety (PLN)',Tc.totalProfitPLN,Tp.totalProfitPLN]
   ],mLabel(cur),mLabel(pm));
   h+='<div class="chart-box" style="margin-top:16px"><div class="stitle" style="margin-top:0">Przychód dzień po dniu</div><canvas id="ch-cmp"></canvas></div>';
@@ -1870,9 +1870,9 @@ function compareYoY(){
   h+=compareTable([
     ['Goście śniadania',Tc.bGuests,Tl.bGuests],
     ['Goście kolacje',Tc.dGuests,Tl.dGuests],
-    ['Koszt total',Tc.costTotal,Tl.costTotal],
+    ['Koszt total',Tc.costTotal,Tl.costTotal,false,true],
     ['Przychód total',Tc.revTotal,Tl.revTotal],
-    ['F&B Cost %',Tc.fbCostPct,Tl.fbCostPct,true],
+    ['F&B Cost %',Tc.fbCostPct,Tl.fbCostPct,true,true],
     ['Dochód bufety (PLN)',Tc.totalProfitPLN,Tl.totalProfitPLN]
   ],cur,ly);
   h+='<div class="chart-box" style="margin-top:16px"><div class="stitle" style="margin-top:0">Przychód dzień po dniu</div><canvas id="ch-cmp"></canvas></div>';
@@ -1891,9 +1891,9 @@ function compareProp(){
   h+=compareTable([
     ['Goście śniadania',Tc.bGuests,Tb.bGuests],
     ['Goście kolacje',Tc.dGuests,Tb.dGuests],
-    ['Koszt total',Tc.costTotal,Tb.costTotal],
+    ['Koszt total',Tc.costTotal,Tb.costTotal,false,true],
     ['Przychód total',Tc.revTotal,Tb.revTotal],
-    ['F&B Cost %',Tc.fbCostPct,Tb.fbCostPct,true],
+    ['F&B Cost %',Tc.fbCostPct,Tb.fbCostPct,true,true],
     ['Dochód bufety (PLN)',Tc.totalProfitPLN,Tb.totalProfitPLN]
   ],nameA,nameB);
   window._cmpData=null;
@@ -1902,12 +1902,13 @@ function compareProp(){
 function compareTable(rows,la,lb){
   var h='<div class="tbl-wrap"><table><thead><tr><th>Metryka</th><th>'+esc(la)+'</th><th>'+esc(lb)+'</th><th>Δ</th></tr></thead><tbody>';
   rows.forEach(function(r){
-    var isPct=r[3];
+    var isPct=r[3],inverse=r[4];
     var a=r[1],b=r[2],d=a-b;
     var av=isPct?fmtPct(a):fmt2(a);
     var bv=isPct?fmtPct(b):fmt2(b);
     var dv=isPct?(d>=0?'+':'')+d.toFixed(1)+'pp':(d>=0?'+':'')+fmt2(d);
-    h+='<tr><td style="font-family:var(--fb)">'+r[0]+'</td><td>'+av+'</td><td>'+bv+'</td><td class="'+(d>=0?'td-pos':'td-neg')+'">'+dv+'</td></tr>';
+    var isGood=inverse?(d<=0):(d>=0);
+    h+='<tr><td style="font-family:var(--fb)">'+r[0]+'</td><td>'+av+'</td><td>'+bv+'</td><td class="'+(isGood?'td-pos':'td-neg')+'">'+dv+'</td></tr>';
   });
   h+='</tbody></table></div>';
   return h;
