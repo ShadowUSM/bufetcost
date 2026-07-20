@@ -278,6 +278,12 @@ tr:hover td{background:var(--sur2)}
 .propcard b{font-family:var(--fd);font-size:.95rem}
 .propcard .meta{font-size:.68rem;color:var(--tx3);margin-top:2px}
 
+/* ═══ COMPACT MONTH SWITCHER (Dashboard/Analysis/Compare) ═══ */
+.mswitch-compact{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.mswitch-compact .icon-btn{width:32px;height:32px;flex-shrink:0}
+.mswitch-label{font-family:var(--fd);font-weight:700;font-size:.92rem;min-width:130px;text-align:center;cursor:pointer;padding:6px 10px;border-radius:9px;background:var(--sur2);border:1px solid var(--brd2)}
+.mswitch-label:hover{border-color:var(--violet)}
+
 /* ═══ THEME PICKER ═══ */
 .theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
 .theme-swatch{border:2px solid var(--brd);border-radius:14px;padding:10px;cursor:pointer;background:var(--sur2);transition:border-color .15s}
@@ -949,7 +955,38 @@ function refreshTopbarSub(){
   var el=document.querySelector('.page-sub');
   if(el)el.textContent=currentProp()? currentProp().name+' · '+mLabelFull(S.ym) : 'Wybierz obiekt';
 }
-function setPid(pid){S.pid=pid;lsSet('lastPid',pid);refreshTopbarSub();renderView()}
+
+/* ═══ COMPACT MONTH SWITCHER (used on Pulpit/Analiza/Porównania) ═══ */
+function shiftMonthGlobal(delta){
+  S.ym=delta<0?prevM(S.ym):nextM(S.ym);
+  lsSet('lastYm',S.ym);
+  haptic(8);
+  renderShell();renderView();
+}
+function monthSwitcherCompact(){
+  return '<div class="mswitch-compact">'+
+    '<button class="icon-btn" onclick="shiftMonthGlobal(-1)" title="Poprzedni miesiąc">◂</button>'+
+    '<div class="mswitch-label" onclick="openMonthJumpModal()" title="Wybierz miesiąc">'+mLabelFull(S.ym)+'</div>'+
+    '<button class="icon-btn" onclick="shiftMonthGlobal(1)" title="Następny miesiąc">▸</button>'+
+    '</div>';
+}
+function openMonthJumpModal(){
+  var p=S.ym.split('-'),curYr=p[0],curMo=p[1];
+  var moOpts=MONTHS_FULL.map(function(m,i){var v=String(i+1).padStart(2,'0');return '<option value="'+v+'"'+(v===curMo?' selected':'')+'>'+m+'</option>'}).join('');
+  var yrOpts='';for(var y=2023;y<=2030;y++){yrOpts+='<option value="'+y+'"'+(String(y)===curYr?' selected':'')+'>'+y+'</option>'}
+  showModal('Wybierz miesiąc',
+    '<div class="frow2"><div><label style="font-size:.72rem;color:var(--tx2)">Miesiąc</label><select class="s-input" id="jump-mo">'+moOpts+'</select></div>'+
+    '<div><label style="font-size:.72rem;color:var(--tx2)">Rok</label><select class="s-input" id="jump-yr">'+yrOpts+'</select></div></div>'+
+    '<div class="btn-row" style="margin-top:14px"><button class="btn primary block" onclick="doMonthJump()">Przejdź</button><button class="btn block" onclick="closeModal()">Anuluj</button></div>'
+  );
+}
+function doMonthJump(){
+  var mo=document.getElementById('jump-mo').value,yr=document.getElementById('jump-yr').value;
+  S.ym=yr+'-'+mo;lsSet('lastYm',S.ym);
+  closeModal();
+  renderShell();renderView();
+}
+function setPid(pid){S.pid=pid;lsSet('lastPid',pid);refreshTopbarSub();refreshCurrentRole();_teamProfilesLoadedFor=null;renderView()}
 function go(view){
   if(view!==S.view)haptic(8);
   S.view=view;lsSet('lastView',view);
@@ -974,7 +1011,8 @@ var ICONS={
   edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
   download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>',
   upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>',
-  empty:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>'
+  empty:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>',
+  team:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
 };
 var NAV=[
   {v:'dashboard',l:'Pulpit',i:'dash'},
@@ -982,8 +1020,10 @@ var NAV=[
   {v:'analysis',l:'Analiza miesięczna',i:'chart'},
   {v:'compare',l:'Porównania',i:'compare'},
   {v:'properties',l:'Obiekty',i:'props'},
+  {v:'team',l:'Zespół',i:'team'},
   {v:'settings',l:'Ustawienia',i:'settings'}
 ];
+var BNAV_VIEWS=['dashboard','entry','analysis','team','settings'];
 
 function renderShell(){
   // Sidebar
@@ -1008,7 +1048,8 @@ function renderShell(){
     '<div class="s-bottom" id="install-slot">'+
       (FB_CONFIGURED&&S.uid?
         '<div id="conn-status" class="conn-dot"><i></i></div>'+
-        '<div class="s-foot-note" style="margin:6px 0 10px;text-align:left">'+esc(S.userEmail||'')+'</div>'+
+        '<div style="display:flex;align-items:center;gap:9px;margin:8px 0 10px">'+avatarHTML(S.userEmailLower,30)+
+        '<div style="min-width:0;overflow:hidden"><div style="font-size:.76rem;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(displayNameFor(S.userEmailLower))+'</div></div></div>'+
         '<button class="btn sm block" onclick="authLogout()" style="margin-bottom:8px">⏻ Wyloguj</button>'
         :
         '<div class="s-foot-note">'+(FB_CONFIGURED?'Dane synchronizowane z chmurą.':'Dane zapisywane lokalnie na urządzeniu.<br>Skonfiguruj Firebase, aby włączyć logowanie i chmurę.')+'</div>'
@@ -1017,13 +1058,13 @@ function renderShell(){
   updateConnStatusUI();
 
   // Bottom nav (mobile) — 5 slots max, fold Ustawienia into Obiekty long-press? keep 5 primary
-  var bnavItems=[NAV[0],NAV[1],NAV[2],NAV[3],NAV[5]];
+  var bnavItems=BNAV_VIEWS.map(function(v){return NAV.find(function(n){return n.v===v})});
   document.getElementById('bottom-nav').innerHTML=bnavItems.map(function(n){
     return '<button class="bnav-item'+(S.view===n.v?' active':'')+'" onclick="go(\''+n.v+'\')">'+ICONS[n.i]+'<span>'+n.l.split(' ')[0]+'</span></button>';
   }).join('');
 
   // Topbar
-  var titles={dashboard:'Pulpit',entry:'Wprowadzanie danych',analysis:'Analiza miesięczna',compare:'Porównania',properties:'Obiekty',settings:'Ustawienia'};
+  var titles={dashboard:'Pulpit',entry:'Wprowadzanie danych',analysis:'Analiza miesięczna',compare:'Porównania',properties:'Obiekty',team:'Zespół',settings:'Ustawienia'};
   var sub=currentProp()? esc(currentProp().name)+' · '+mLabelFull(S.ym) : 'Wybierz obiekt';
   document.getElementById('topbar').innerHTML=
     '<button id="hamburger" onclick="openSidebar()">'+ICONS.menu+'</button>'+
@@ -1211,6 +1252,8 @@ function showApp(user){
   migrateLocalDataToCloud().then(function(){
     return loadUserDataFromFirestore();
   }).then(function(){
+    return fetchProfilesFor([S.userEmailLower]);
+  }).then(function(){
     finishStartup();
   }).catch(function(e){
     console.warn('Firestore load error:',e);
@@ -1257,6 +1300,7 @@ function renderView(){
   else if(S.view==='analysis')root.innerHTML=viewAnalysis();
   else if(S.view==='compare')root.innerHTML=viewCompare();
   else if(S.view==='properties')root.innerHTML=viewProperties();
+  else if(S.view==='team')root.innerHTML=viewTeam();
   else if(S.view==='settings')root.innerHTML=viewSettings();
   var spacer=document.createElement('div');
   spacer.className='view-end-spacer';
@@ -1288,6 +1332,7 @@ function afterRenderHook(){
   if(S.view==='entry')afterEntry();
   if(S.view==='analysis')afterAnalysis();
   if(S.view==='compare')afterCompare();
+  if(S.view==='team')afterTeam();
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1563,6 +1608,7 @@ function afterEntry(){}
 var _atab=lsGet('atab','b');
 function viewAnalysis(){
   if(!S.pid)return emptyState('Brak obiektów','Dodaj obiekt, aby zobaczyć analizę.','properties','Dodaj obiekt');
+  var h0=monthSwitcherCompact();
   var M=calcMonth(S.pid,S.ym),T=M.totals;
   var target=getTargetFB(S.pid);
   var budget=getBudget(S.pid,S.ym);
@@ -1571,7 +1617,7 @@ function viewAnalysis(){
   var rank=rankDays(M,5);
   var seg=guestSegments(M);
 
-  var h='';
+  var h=h0;
   h+='<div class="ccards">'+
     ccard('Śniadania total',T.bGuests)+
     ccard('Kolacje total',T.dGuests)+
@@ -1758,7 +1804,8 @@ var _cmpPid2=null;
 function viewCompare(){
   if(!S.pid)return emptyState('Brak obiektów','Dodaj obiekt, aby porównywać dane.','properties','Dodaj obiekt');
   window._cmpData=null;window._multiData=null;
-  var h='<div class="tabs">'+
+  var h=monthSwitcherCompact();
+  h+='<div class="tabs">'+
     '<button class="tab'+(_ctab==='mom'?' on':'')+'" onclick="switchCTab(\'mom\')">Miesiąc vs Miesiąc</button>'+
     '<button class="tab'+(_ctab==='yoy'?' on':'')+'" onclick="switchCTab(\'yoy\')">Rok vs Rok</button>'+
     '<button class="tab'+(_ctab==='multi'?' on':'')+'" onclick="switchCTab(\'multi\')">Wiele lat</button>'+
@@ -1904,9 +1951,8 @@ function viewProperties(){
     var isAdmin=myRole==='admin';
     var memberCount=(p.members||[{email:p.ownerEmail||'',role:'admin'}]).length;
     h+='<div class="propcard"><div><b>'+esc(p.name)+'</b><div class="meta">'+(months.length? months.length+' mies. z danymi · ostatni: '+mLabel(months[months.length-1]) : 'brak danych')+
-       (FB_CONFIGURED&&S.uid?' · 👥 '+memberCount+' os.':'')+'</div></div>'+
+       (FB_CONFIGURED&&S.uid?' · 👥 '+memberCount+' os. (zarządzaj w zakładce Zespół)':'')+'</div></div>'+
        '<div class="btn-row">'+
-       (FB_CONFIGURED&&S.uid?'<button class="icon-btn" onclick="openTeamModal(\''+p.id+'\')" title="Zespół">👥</button>':'')+
        (isAdmin||!FB_CONFIGURED?'<button class="icon-btn" onclick="openPropModal(\''+p.id+'\')">'+ICONS.edit+'</button><button class="icon-btn" onclick="confirmDeleteProp(\''+p.id+'\')">'+ICONS.trash+'</button>':'')+
        '</div></div>';
   });
@@ -1938,29 +1984,121 @@ function doDeleteProp(id){
   toast('Obiekt usunięty','ok');
 }
 
-/* ═══ TEAM / MEMBERS ═══ */
-function openTeamModal(pid){
-  var p=S.props.find(function(x){return x.id===pid});
-  if(!p)return;
-  var isAdmin=getMyRole(p)==='admin';
-  var members=p.members||[{email:p.ownerEmail||'',role:'admin'}];
-  var body='<div style="font-size:.8rem;color:var(--tx2);margin-bottom:14px">Osoby z dostępem do <b>'+esc(p.name)+'</b>:</div>';
-  body+=members.map(function(m){
-    var initial=(m.email||'?').charAt(0).toUpperCase();
-    return '<div class="team-member"><div class="team-avatar">'+initial+'</div>'+
-      '<div class="team-info"><div class="team-email">'+esc(m.email)+'</div><div class="team-role">'+({admin:'Administrator',manager:'Manager — edycja',viewer:'Podgląd — tylko odczyt'}[m.role]||m.role)+'</div></div>'+
-      (isAdmin&&m.email!==p.ownerEmail?'<button class="icon-btn" onclick="removeMemberAndRefresh(\''+pid+'\',\''+esc(m.email)+'\')">'+ICONS.trash+'</button>':'')+
+/* ═══════════════════════════════════════════════════════
+   PROFILE — imię i nazwisko + kolorowy avatar z inicjałami.
+   Przechowywany per-email w Firestore: profiles/{emailLower}
+   (klucz to email, nie uid — dzięki temu każdy członek zespołu
+   może odczytać wyświetlaną nazwę współpracownika po jego emailu,
+   bez potrzeby dodatkowego katalogu/uprawnień).
+═══════════════════════════════════════════════════════ */
+var AVATAR_PALETTE=['#7c6cf0','#ff6fa5','#ff8c66','#22d3ee','#f6b93b','#34d399'];
+function profileKey(email){return 'profile-'+(email||'')}
+function getLocalProfile(email){return lsGet(profileKey(email),null)}
+function saveMyProfile(displayName){
+  var email=S.userEmailLower;
+  var profile={displayName:displayName,email:email,updatedAt:Date.now()};
+  lsSet(profileKey(email),profile);
+  if(S.uid)fsWrite(db.collection('profiles').doc(email),profile);
+}
+function fetchProfilesFor(emails){
+  if(!S.uid||!db)return Promise.resolve();
+  var uniq=emails.filter(function(e,i){return e&&emails.indexOf(e)===i});
+  return Promise.all(uniq.map(function(email){
+    return db.collection('profiles').doc(email).get().then(function(doc){
+      if(doc.exists)lsSet(profileKey(email),doc.data());
+    }).catch(function(){});
+  }));
+}
+function displayNameFor(email){
+  var p=getLocalProfile(email);
+  if(p&&p.displayName)return p.displayName;
+  return email?email.split('@')[0]:'—';
+}
+function avatarInitials(email){
+  var name=displayNameFor(email);
+  var parts=name.trim().split(/\s+/).filter(Boolean);
+  if(parts.length>=2)return (parts[0].charAt(0)+parts[1].charAt(0)).toUpperCase();
+  return (name.slice(0,2)||'?').toUpperCase();
+}
+function avatarColorFor(str){
+  str=str||'';
+  var hash=0;
+  for(var i=0;i<str.length;i++)hash=(hash*31+str.charCodeAt(i))>>>0;
+  return AVATAR_PALETTE[hash%AVATAR_PALETTE.length];
+}
+function avatarHTML(email,size){
+  size=size||36;
+  return '<div class="team-avatar" style="width:'+size+'px;height:'+size+'px;font-size:'+(size*0.38)+'px;background:'+avatarColorFor(email)+'">'+avatarInitials(email)+'</div>';
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW: TEAM (Zespół) — profil własny + zarządzanie zespołem
+   bieżącego obiektu (zaproszenia, role, usuwanie).
+═══════════════════════════════════════════════════════ */
+function viewTeam(){
+  if(!FB_CONFIGURED)return emptyState('Wymaga konfiguracji Firebase','Zespół i profile użytkowników wymagają połączenia z chmurą (Firestore + logowanie). Skonfiguruj Firebase w kodzie aplikacji, aby korzystać z tej zakładki.');
+  if(!S.uid)return emptyState('Zaloguj się','Zaloguj się, aby zarządzać swoim profilem i zespołem.');
+
+  var myProfile=getLocalProfile(S.userEmailLower)||{};
+  var myName=myProfile.displayName||S.userEmailLower.split('@')[0];
+  var h='<div class="card" style="margin-bottom:16px">';
+  h+='<div class="stitle" style="margin-top:0">Twój profil</div>';
+  h+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">'+
+     avatarHTML(S.userEmailLower,56)+
+     '<div><div style="font-weight:700;font-family:var(--fd);font-size:1.02rem">'+esc(myName)+'</div><div class="page-sub">'+esc(S.userEmail)+'</div></div>'+
+     '</div>';
+  h+='<div class="field"><label>Imię i nazwisko (widoczne dla zespołu)</label><input class="s-input" id="profile-name" value="'+esc(myProfile.displayName||'')+'" placeholder="np. Jan Kowalski" onkeydown="if(event.key===\'Enter\')doSaveProfile()"></div>';
+  h+='<button class="btn primary" onclick="doSaveProfile()">💾 Zapisz profil</button>';
+  h+='</div>';
+
+  if(!S.pid){h+=emptyState('Brak wybranego obiektu','Wybierz lub dodaj obiekt, aby zarządzać jego zespołem.','properties','Przejdź do Obiekty');return h;}
+  var prop=S.props.find(function(p){return p.id===S.pid});
+  if(!prop)return h;
+  var isAdmin=getMyRole(prop)==='admin';
+  var members=prop.members||[{email:prop.ownerEmail,role:'admin'}];
+
+  h+='<div class="card"><div class="stitle" style="margin-top:0">👥 Zespół obiektu: '+esc(prop.name)+' <small>'+members.length+' '+(members.length===1?'osoba':'osób')+'</small></div>';
+  h+=members.map(function(m){
+    var name=displayNameFor(m.email);
+    return '<div class="team-member">'+avatarHTML(m.email,40)+
+      '<div class="team-info"><div class="team-email">'+esc(name)+(m.email===S.userEmailLower?' (Ty)':'')+'</div>'+
+      '<div class="team-role">'+esc(m.email)+' · '+({admin:'Administrator',manager:'Manager — edycja',viewer:'Podgląd — tylko odczyt'}[m.role]||m.role)+'</div></div>'+
+      (isAdmin&&m.email!==prop.ownerEmail?'<button class="icon-btn" onclick="removeMemberAndRefresh(\''+S.pid+'\',\''+esc(m.email)+'\')">'+ICONS.trash+'</button>':'')+
       '</div>';
   }).join('');
   if(isAdmin){
-    body+='<div style="margin-top:16px"><div class="field"><label>Zaproś nową osobę (email)</label><input class="s-input" id="team-invite-email" type="email" placeholder="osoba@hotel.pl" onkeydown="if(event.key===\'Enter\')doInviteMember(\''+pid+'\')"></div>'+
+    h+='<div style="margin-top:16px"><div class="field"><label>Zaproś nową osobę (email)</label><input class="s-input" id="team-invite-email" type="email" placeholder="osoba@hotel.pl" onkeydown="if(event.key===\'Enter\')doInviteMember(\''+S.pid+'\')"></div>'+
       '<div class="field"><label>Rola</label><select class="s-input" id="team-invite-role"><option value="manager">Manager — może edytować dane</option><option value="viewer">Podgląd — tylko odczyt</option></select></div>'+
-      '<button class="btn primary block" onclick="doInviteMember(\''+pid+'\')">+ Zaproś</button>'+
+      '<button class="btn primary block" onclick="doInviteMember(\''+S.pid+'\')">+ Zaproś</button>'+
       '<p style="font-size:.68rem;color:var(--tx3);margin-top:8px">Osoba musi mieć (lub założyć) konto w BufetCost na ten sam adres email — wtedy automatycznie zobaczy ten obiekt po zalogowaniu.</p></div>';
   }else{
-    body+='<p style="font-size:.72rem;color:var(--tx3);margin-top:14px">Tylko administrator obiektu może zapraszać nowe osoby.</p>';
+    h+='<p style="font-size:.72rem;color:var(--tx3);margin-top:14px">Tylko administrator obiektu może zapraszać nowe osoby.</p>';
   }
-  showModal('👥 Zespół obiektu',body);
+  h+='</div>';
+
+  if(S.props.length>1){
+    h+='<p style="font-size:.68rem;color:var(--tx3);text-align:center;margin-top:14px">Zespół zarządzany jest osobno dla każdego obiektu — przełącz obiekt w pasku bocznym, aby zarządzać innym zespołem.</p>';
+  }
+  return h;
+}
+function doSaveProfile(){
+  var name=(document.getElementById('profile-name').value||'').trim();
+  if(!name){toast('Podaj imię i nazwisko','err');return}
+  saveMyProfile(name);
+  toast('Zapisano profil','ok');
+  renderShell();renderView();
+}
+var _teamProfilesLoadedFor=null;
+function afterTeam(){
+  if(!S.pid||!S.uid)return;
+  var prop=S.props.find(function(p){return p.id===S.pid});
+  if(!prop)return;
+  if(_teamProfilesLoadedFor===S.pid)return;
+  _teamProfilesLoadedFor=S.pid;
+  var emails=(prop.members||[]).map(function(m){return m.email});
+  fetchProfilesFor(emails).then(function(){
+    if(S.view==='team')renderView();
+  });
 }
 function doInviteMember(pid){
   var email=document.getElementById('team-invite-email').value;
@@ -1969,13 +2107,13 @@ function doInviteMember(pid){
   if(!res.ok){toast(res.msg,'err');return}
   refreshProps();
   toast('Zaproszono '+email,'ok');
-  openTeamModal(pid);
+  renderView();
 }
 function removeMemberAndRefresh(pid,email){
   removeMemberFromProperty(pid,email);
   refreshProps();
   toast('Usunięto dostęp dla '+email,'ok');
-  openTeamModal(pid);
+  renderView();
 }
 
 
@@ -2113,7 +2251,7 @@ function viewDashboard(){
   var target=isAll?30:getTargetFB(S.pid);
   window._dashDays=days;window._dashT=T;
 
-  var h='';
+  var h=monthSwitcherCompact();
   h+='<div class="btn-row" style="margin-bottom:14px;justify-content:space-between;align-items:center">';
   if(S.props.length>1){
     h+='<div class="pill-select" style="max-width:340px"><button class="'+(!isAll?'on':'')+'" onclick="_dashAll=false;lsSet(\'dashAll\',false);renderView()">'+esc(currentProp().name)+'</button><button class="'+(isAll?'on':'')+'" onclick="_dashAll=true;lsSet(\'dashAll\',true);renderView()">Wszystkie obiekty (suma)</button></div>';
@@ -2248,14 +2386,63 @@ function emptyState(title,sub,goView,btnLabel){
    PWA: manifest + icon generated at runtime (no external assets needed)
 ═══════════════════════════════════════════════════════ */
 function makeIconDataURL(size){
-  var c=document.createElement('canvas');c.width=size;c.height=size;
+  var S=size;
+  var c=document.createElement('canvas');c.width=S;c.height=S;
   var ctx=c.getContext('2d');
-  var g=ctx.createLinearGradient(0,0,size,size);
-  g.addColorStop(0,'#7c6cf0');g.addColorStop(.5,'#c866ea');g.addColorStop(1,'#ff6fa5');
-  ctx.fillStyle=g;ctx.fillRect(0,0,size,size);
-  ctx.fillStyle='#fff';ctx.font='bold '+(size*0.52)+'px Outfit,sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('B',size/2,size*0.56);
+  if(!ctx.roundRect){
+    ctx.roundRect=function(x,y,w,h,r){
+      this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.arcTo(x+w,y,x+w,y+r,r);
+      this.lineTo(x+w,y+h-r);this.arcTo(x+w,y+h,x+w-r,y+h,r);this.lineTo(x+r,y+h);
+      this.arcTo(x,y+h,x,y+h-r,r);this.lineTo(x,y+r);this.arcTo(x,y,x+r,y,r);this.closePath();return this;
+    };
+  }
+  function roundTopRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x,y+h);
+    ctx.lineTo(x,y+r);
+    ctx.arcTo(x,y,x+r,y,r);
+    ctx.lineTo(x+w-r,y);
+    ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h);
+    ctx.closePath();
+  }
+
+  // ── Background: rounded square, diagonal Aurora gradient ──
+  var bg=ctx.createLinearGradient(0,0,S,S);
+  bg.addColorStop(0,'#7c6cf0');bg.addColorStop(.5,'#c866ea');bg.addColorStop(1,'#ff6fa5');
+  ctx.fillStyle=bg;ctx.roundRect(0,0,S,S,S*0.22);ctx.fill();
+
+  // Soft top-left glow for depth
+  var glow=ctx.createRadialGradient(S*0.28,S*0.22,0,S*0.28,S*0.22,S*0.65);
+  glow.addColorStop(0,'rgba(255,255,255,.16)');glow.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=glow;ctx.roundRect(0,0,S,S,S*0.22);ctx.fill();
+
+  // ── Plate ──
+  ctx.fillStyle='rgba(255,255,255,.95)';
+  ctx.beginPath();ctx.ellipse(S*0.5,S*0.705,S*0.275,S*0.088,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(124,108,240,.18)';ctx.lineWidth=S*0.012;
+  ctx.beginPath();ctx.ellipse(S*0.5,S*0.705,S*0.205,S*0.062,0,0,Math.PI*2);ctx.stroke();
+
+  // ── Rising bar chart (F&B cost/revenue growth) ──
+  var barY=S*0.705,barW=S*0.108,gap=S*0.028;
+  var heights=[S*0.16,S*0.265,S*0.385];
+  var startX=S*0.5-(barW*3+gap*2)/2;
+  heights.forEach(function(h,i){
+    var x=startX+i*(barW+gap);
+    var grad=ctx.createLinearGradient(0,barY-h,0,barY);
+    grad.addColorStop(0,'#ffffff');grad.addColorStop(1,'rgba(255,255,255,.75)');
+    ctx.fillStyle=grad;
+    roundTopRect(x,barY-h,barW,h,barW*0.32);
+    ctx.fill();
+  });
+
+  // Accent highlight dot above tallest bar (growth marker)
+  var tipX=startX+2*(barW+gap)+barW/2,tipY=barY-heights[2]-S*0.05;
+  var dot=ctx.createRadialGradient(tipX,tipY,0,tipX,tipY,S*0.05);
+  dot.addColorStop(0,'#fff6e0');dot.addColorStop(1,'#ffb74d');
+  ctx.fillStyle=dot;
+  ctx.beginPath();ctx.arc(tipX,tipY,S*0.042,0,Math.PI*2);ctx.fill();
+
   return c.toDataURL('image/png');
 }
 function setupPWA(){
