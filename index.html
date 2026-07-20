@@ -1020,10 +1020,9 @@ var NAV=[
   {v:'analysis',l:'Analiza miesięczna',i:'chart'},
   {v:'compare',l:'Porównania',i:'compare'},
   {v:'properties',l:'Obiekty',i:'props'},
-  {v:'team',l:'Zespół',i:'team'},
   {v:'settings',l:'Ustawienia',i:'settings'}
 ];
-var BNAV_VIEWS=['dashboard','entry','analysis','team','settings'];
+var BNAV_VIEWS=['dashboard','entry','analysis','compare','settings'];
 
 function renderShell(){
   // Sidebar
@@ -2122,6 +2121,22 @@ function removeMemberAndRefresh(pid,email){
 ═══════════════════════════════════════════════════════ */
 function viewSettings(){
   var h='';
+  if(FB_CONFIGURED&&S.uid){
+    var myProfile=getLocalProfile(S.userEmailLower)||{};
+    var myName=myProfile.displayName||S.userEmailLower.split('@')[0];
+    h+='<div class="card" style="margin-bottom:16px">';
+    h+='<div class="stitle" style="margin-top:0">Zespół i profil</div>';
+    h+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'+
+       avatarHTML(S.userEmailLower,44)+
+       '<div><div style="font-weight:700;font-family:var(--fd)">'+esc(myName)+'</div><div class="page-sub">'+esc(S.userEmail)+'</div></div>'+
+       '</div>';
+    h+='<p style="font-size:.8rem;color:var(--tx2);margin-bottom:12px">Zarządzaj swoim profilem (nazwa, avatar) oraz zapraszaj współpracowników do obiektów, nadając im role administratora, managera lub podglądu.</p>';
+    h+='<button class="btn primary" onclick="go(\'team\')">'+ICONS.team+' Otwórz Zespół i profil</button>';
+    h+='</div>';
+  }else if(FB_CONFIGURED){
+    h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Zespół i profil</div>';
+    h+='<p style="font-size:.8rem;color:var(--tx2)">Zaloguj się, aby ustawić swój profil i zapraszać współpracowników do obiektów.</p></div>';
+  }
   var curT=currentTheme();
   h+='<div class="card" style="margin-bottom:16px"><div class="stitle" style="margin-top:0">Kolorystyka</div>';
   h+='<div class="theme-grid">';
